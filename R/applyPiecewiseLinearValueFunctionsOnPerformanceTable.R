@@ -37,7 +37,7 @@
 #
 ##############################################################################
 
-applyValueFunctionsOnPerformanceTable <- function(valueFunctions, performanceTable, criteriaMinMax, alternativesIDs = NULL, criteriaIDs = NULL){
+applyPiecewiseLinearValueFunctionsOnPerformanceTable <- function(valueFunctions, performanceTable, criteriaMinMax, alternativesIDs = NULL, criteriaIDs = NULL){
 	
 	## check the input data
   
@@ -61,17 +61,17 @@ applyValueFunctionsOnPerformanceTable <- function(valueFunctions, performanceTab
 	  performanceTable <- performanceTable[alternativesIDs,]
 	} 
   
-  print(valueFunctions)
+  # print(valueFunctions)
   
 	# -------------------------------------------------------
   
 	numCrit <- dim(performanceTable)[2]
   
-  print(numCrit)
+  # print(numCrit)
   
 	numAlt <- dim(performanceTable)[1]
 
-  print(numAlt)
+  # print(numAlt)
   # -------------------------------------------------------
 	
   # determine first how many breakpoints in each value function

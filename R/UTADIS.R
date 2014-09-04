@@ -37,27 +37,18 @@
 #
 ##############################################################################
 
-UTASTAR <- function(performanceTable, criteriaMinMax, criteriaNumberOfBreakPoints, epsilon, alternativesRanks = NULL, alternativesPreferences = NULL, alternativesIndifferences = NULL, criteriaLBs=NULL, criteriaUBs=NULL, alternativesIDs = NULL, criteriaIDs = NULL, kPostOptimality = NULL){
+UTADIS <- function(performanceTable, criteriaMinMax, criteriaNumberOfBreakPoints, alternativesAssignments, categoriesRanks, epsilon, criteriaLBs=NULL, criteriaUBs=NULL, alternativesIDs = NULL, criteriaIDs = NULL, categoriesIDs = NULL){
   
   ## check the input data
   
   if (!((is.matrix(performanceTable) || (is.data.frame(performanceTable))))) 
     stop("wrong performanceTable, should be a matrix or a data frame")
   
-  if (!(is.null(alternativesRanks) || is.vector(alternativesRanks)))
+  if (!(is.null(alternativesAssignments) || is.vector(alternativesAssignments)))
     stop("alternativesRanks should be a vector")
   
-  if (!(is.null(alternativesPreferences) || is.matrix(alternativesPreferences)))
-    stop("alternativesPreferences should be a matrix")
-  
-  if (!(is.null(alternativesIndifferences) || is.matrix(alternativesIndifferences)))
-    stop("alternativesIndifferences should be a matrix")
-  
-  if (is.null(alternativesRanks) && is.null(alternativesPreferences) && is.null(alternativesIndifferences))
-    stop("at least one of alternativesRanks, alternativesPreferences or alternativesIndifferences should not be NULL")
-  
-  if (!is.null(alternativesRanks) && (!is.null(alternativesPreferences) | !is.null(alternativesIndifferences)))
-    stop("alternativesRanks and one of alternativesPreferences or alternativesIndifferences cannot be simultaneously not NULL")
+  if (!(is.null(categoriesRanks) || is.vector(categoriesRanks)))
+    stop("categoriesRanks should be a vector")
   
   if (!(is.vector(criteriaMinMax)))
     stop("criteriaMinMax should be a vector")
@@ -71,6 +62,9 @@ UTASTAR <- function(performanceTable, criteriaMinMax, criteriaNumberOfBreakPoint
   if (!(is.null(criteriaIDs) || is.vector(criteriaIDs)))
     stop("criteriaIDs should be in a vector")
   
+  if (!(is.null(categoriesIDs) || is.vector(categoriesIDs)))
+    stop("categoriesIDs should be in a vector")
+  
   if (!(is.null(criteriaLBs) || is.vector(criteriaLBs)))
     stop("criteriaLBs should be in a vector")
   
@@ -81,28 +75,11 @@ UTASTAR <- function(performanceTable, criteriaMinMax, criteriaNumberOfBreakPoint
   ## in alternativesIDs and criteriaIDs
   
   if (!is.null(alternativesIDs)){
-    performanceTable <- performanceTable[alternativesIDs,]
-    if (!is.null(alternativesRanks))
-      alternativesRanks <- alternativesRanks[alternativesIDs]
-    if (!is.null(alternativesPreferences)){
-      tmpIds <- intersect(alternativesPreferences, alternativesIDs)
-      tmpMatrix <- c()
-      for (i in 1:dim(alternativesPreferences)[1]){
-        if (all(alternativesPreferences[i,] %in% tmpIds))
-          tmpMatrix <- rbind(tmpMatrix,alternativesPreferences[i,])
-      }
-      alternativesPreferences <- tmpMatrix
-    }
-    if (!is.null(alternativesIndifferences)){
-      tmpIds <- intersect(alternativesIndifferences, alternativesIDs)
-      tmpMatrix <- c()
-      for (i in 1:dim(alternativesIndifferences)[1]){
-        if (all(alternativesIndifferences[i,] %in% tmpIds))
-          tmpMatrix <- rbind(tmpMatrix,alternativesIndifferences[i,])
-      }
-      alternativesIndifferences <- tmpMatrix
-    }
-  } 
+    performanceTable <- performanceTable[alternativesIDs,] 
+    alternativesAssignments <- alternativesAssignments[alternativesIDs]
+  }
+    
+    
   
   if (!is.null(criteriaIDs)){
     criteriaMinMax <- criteriaMinMax[criteriaIDs]
@@ -118,51 +95,20 @@ UTASTAR <- function(performanceTable, criteriaMinMax, criteriaNumberOfBreakPoint
     criteriaLBs <- criteriaLBs[criteriaIDs]
   }
   
-  # only the alternatives which are in the ranking should be considered for the calculation
-  # we therefore take the intersection between the alternatives present in the performance
-  # table and those of the ranking
+  ## filter the data according to the given cateogries
+  ## in categoriesIDs
+  ## also update the performanceTable to remove alternatives
+  ## which have no assignments anymore
   
-  if (!is.null(alternativesRanks)){
-    reallyActiveAlternatives <- intersect(rownames(performanceTable),names(alternativesRanks))
-    
-    if (length(reallyActiveAlternatives) != 0){
-      performanceTable <- performanceTable[reallyActiveAlternatives,]
-      alternativesRanks <- alternativesRanks[reallyActiveAlternatives]
-    } else {
-      stop("alternatives of alternativesRanks are not compatible with those of performanceTable")
+  if (!is.null(categoriesIDs)){
+    tmp<-lapply(alternativesAssignments, function(x) x == categoriesIDs)
+    tmp2<-c()
+    for (i in 1:length(tmp)){
+      tmp2<-c(tmp2,any(tmp[[i]]))
     }
-  }
-  
-  if (!is.null(alternativesPreferences) || !is.null(alternativesIndifferences)){
-    reallyActiveAlternatives <- intersect(rownames(performanceTable),rbind(alternativesPreferences,alternativesIndifferences))
-    
-    if (length(reallyActiveAlternatives) != 0){
-      performanceTable <- performanceTable[reallyActiveAlternatives,]
-      
-      if (!is.null(alternativesPreferences)){
-        tmpIds <- intersect(alternativesPreferences, reallyActiveAlternatives)
-        tmpMatrix <- c()
-        for (i in 1:dim(alternativesPreferences)[1]){
-          if (all(alternativesPreferences[i,] %in% tmpIds))
-            tmpMatrix <- rbind(tmpMatrix,alternativesPreferences[i,])
-        }
-        alternativesPreferences <- tmpMatrix
-      }
-      
-      if (!is.null(alternativesIndifferences)){
-        tmpIds <- intersect(alternativesIndifferences, reallyActiveAlternatives)
-        tmpMatrix <- c()
-        for (i in 1:dim(alternativesIndifferences)[1]){
-          if (all(alternativesIndifferences[i,] %in% tmpIds))
-            tmpMatrix <- rbind(tmpMatrix,alternativesIndifferences[i,])
-        }
-        alternativesIndifferences <- tmpMatrix
-      }
-      
-    } else {
-      stop("alternatives of alternativesPreferences or alternativesIndifferences are not compatible with those of performanceTable")
-    }
-    
+    alternativesAssignments<-alternativesAssignments[tmp2]
+    categoriesRanks <- categoriesRanks[categoriesRanks=categoriesIDs]
+    performanceTable <- performanceTable[names(alternativesAssignments),] 
   }
   
   # data is filtered, check for some data consistency
@@ -186,18 +132,39 @@ UTASTAR <- function(performanceTable, criteriaMinMax, criteriaNumberOfBreakPoint
   if (is.null(dim(performanceTable))) 
     stop("less than 2 criteria or 2 alternatives")
   
-  
-  # if there are no alternatives left in the ranking or the pairwise preferences
+  # if there are no assignments examples left
   # we stop here
   
-  if (is.null(alternativesRanks) && is.null(alternativesPreferences) && is.null(alternativesIndifferences))
-    stop("after filtering none of alternativesRanks, alternativesPreferences or alternativesIndifferences is not NULL")
+  if (length(alternativesAssignments)==0)
+    stop("after filtering alternativesAssignments is empty")
+  
+  # if there are no categories ranks left
+  # we stop here
+  
+  if (length(categoriesRanks) == 0)
+    stop("after filtering categoriesRanks is empty")
+  
+  # check if categoriesRanks and alternativesAssignments are compatible
+  # i.e. if for each assignment example, the category has a rank
+  
+  if (length(setdiff(unique(alternativesAssignments),names(categoriesRanks))) != 0)
+    stop("alternativesAssignments contains categories which have no rank in categoriesRanks")
+  
   
   # -------------------------------------------------------
   
   numCrit <- dim(performanceTable)[2]
   
   numAlt <- dim(performanceTable)[1]
+  
+  # define how many categories we have and how they are named (after all the filtering processes)
+  
+  categoriesIDs <- unique(alternativesAssignments)
+  
+  numCat <- length(categoriesIDs)
+  
+  if (numCat <= 1)
+    stop("only 1 or less category left after filtering")
   
   # -------------------------------------------------------
   
@@ -290,91 +257,72 @@ UTASTAR <- function(performanceTable, criteriaMinMax, criteriaNumberOfBreakPoint
   
   # -------------------------------------------------------
   
-  # the objective function : the first elements correspond to the ui's, the last one to the sigmas
+  # the objective function : the first elements correspond to the ui's, then the sigmas, and to finish, we have the category thresholds (one lower threshold per category, none for the lowest category)
   
   obj<-rep(0,sum(criteriaNumberOfBreakPoints))
   
   obj<-c(obj,rep(1,2*numAlt))
   
+  obj<-c(obj,rep(0,numCat-1))
+  
   # -------------------------------------------------------
   
-  # we now build the part of the constraints matrix concerning the order / preferences / indifferences given by the decision maker
+  assignmentConstraintsLBs <- matrix(nrow=0, ncol=sum(criteriaNumberOfBreakPoints)+2*numAlt + numCat - 1)
+  assignmentConstraintsUBs <- matrix(nrow=0, ncol=sum(criteriaNumberOfBreakPoints)+2*numAlt + numCat - 1)
   
-  preferenceConstraints<-matrix(nrow=0, ncol=sum(criteriaNumberOfBreakPoints)+2*numAlt)
-  indifferenceConstraints <-matrix(nrow=0, ncol=sum(criteriaNumberOfBreakPoints)+2*numAlt)
+  # for each assignment example, write its constraint
   
-  if (!is.null(alternativesRanks)){
+  # categoriesRanks might contain ranks which are higher than 1,2,3, ... (for example if some categories have been filtered out)
+  # that's why we recalculate the ranks of the filtered categories here
+  # that will give us the positions in the lower bounds vector of the categories
+  
+  newCategoriesRanks <- rank(categoriesRanks)
     
-    # determine now in which order the alternatives should be treated for the constraints
-    indexOrder <- c()
-    orderedAlternativesRanks <- sort(alternativesRanks)
-    tmpRanks1 <- alternativesRanks
-    tmpRanks2 <- alternativesRanks
-    
-    while (length(orderedAlternativesRanks) != 0){
-      # search for the alternatives of lowest rank
-      tmpIndex <- which(alternativesRanks == orderedAlternativesRanks[1])
-      for (j in 1:length(tmpIndex))
-        indexOrder<-c(indexOrder,tmpIndex[j])
-      # remove the rank which has been dealt with now
-      orderedAlternativesRanks<-orderedAlternativesRanks[-which(orderedAlternativesRanks==orderedAlternativesRanks[1])]
+  for (i in 1:length(alternativesAssignments)){
+    # determine which lower bound should be activated for the comparison
+    # none if it is an assignment in the lowest category
+    if (newCategoriesRanks[alternativesAssignments[i]] != max(newCategoriesRanks)){
+      tmp <- rep(0,numCat-1)
+      tmp[newCategoriesRanks[alternativesAssignments[i]]] <- -1
+      assignmentConstraintsLBs<-rbind(assignmentConstraintsLBs, c(a[which(rownames(performanceTable) == names(alternativesAssignments)[i]),],tmp))
     }
-    
-    for (i in 1:(length(alternativesRanks)-1)){
-      if (alternativesRanks[indexOrder[i]] == alternativesRanks[indexOrder[i+1]]){
-        # then the alternatives are indifferent and their overall values are equal
-        indifferenceConstraints <- rbind(indifferenceConstraints, a[indexOrder[i],] - a[indexOrder[i+1],])
-      }
-      else{
-        # then the first alternative i is ranked better than the second one i+1 and i has an overall value higher than i+1
-        preferenceConstraints <- rbind(preferenceConstraints, a[indexOrder[i],] - a[indexOrder[i+1],])
-      } 
+    if (newCategoriesRanks[alternativesAssignments[i]] != min(newCategoriesRanks)){
+      tmp <- rep(0,numCat-1)
+      tmp[newCategoriesRanks[alternativesAssignments[i]]-1] <- -1
+      assignmentConstraintsUBs<-rbind(assignmentConstraintsUBs, c(a[which(rownames(performanceTable) == names(alternativesAssignments)[i]),],tmp))
     }
   }
   
-  if (!is.null(alternativesPreferences)){
-    
-    for (i in 1:dim(alternativesPreferences)[1]){
-      preferenceConstraints <- rbind(preferenceConstraints, a[which(rownames(performanceTable)==alternativesPreferences[i,1]),] - a[which(rownames(performanceTable)==alternativesPreferences[i,2]),])
-    }   
-  }
-  
-  if (!is.null(alternativesIndifferences)){
-    
-    for (i in 1:dim(alternativesIndifferences)[1]){
-      indifferenceConstraints <- rbind(indifferenceConstraints, a[which(rownames(performanceTable)==alternativesIndifferences[i,1]),] - a[which(rownames(performanceTable)==alternativesIndifferences[i,2]),])
-    }   
-  }
   
   # add this to the constraints matrix mat
   
-  mat<-rbind(preferenceConstraints,indifferenceConstraints)
+  mat<-rbind(assignmentConstraintsLBs,assignmentConstraintsUBs)
   
   # right hand side of this part of mat
   
   rhs <- c()
   
-  if (dim(preferenceConstraints)[1]!=0){
-    for (i in (1:dim(preferenceConstraints)[1]))
-      rhs<-c(rhs,epsilon)
+  if (dim(assignmentConstraintsLBs)[1]!=0){
+    for (i in (1:dim(assignmentConstraintsLBs)[1]))
+      rhs<-c(rhs,0)
   }
   
-  if (dim(indifferenceConstraints)[1]!=0){
-    for (i in (1:dim(indifferenceConstraints)[1]))
-      rhs<-c(rhs,0)
+  if (dim(assignmentConstraintsUBs)[1]!=0){
+    for (i in (1:dim(assignmentConstraintsUBs)[1]))
+      rhs<-c(rhs,-epsilon)
   }
   # direction of the inequality for this part of mat
   
   dir <- c()
   
-  if (dim(preferenceConstraints)[1]!=0){
-    for (i in (1:dim(preferenceConstraints)[1]))
+  if (dim(assignmentConstraintsLBs)[1]!=0){
+    for (i in (1:dim(assignmentConstraintsLBs)[1]))
       dir<-c(dir,">=")
   }
   
-  if (dim(indifferenceConstraints)[1]!=0){
-    for (i in (1:dim(indifferenceConstraints)[1]))
-      dir<-c(dir,"==")
+  if (dim(assignmentConstraintsUBs)[1]!=0){
+    for (i in (1:dim(assignmentConstraintsUBs)[1]))
+      dir<-c(dir,"<=")
   }
   
   
@@ -382,11 +330,11 @@ UTASTAR <- function(performanceTable, criteriaMinMax, criteriaNumberOfBreakPoint
   
   # now the monotonicity constraints on the value functions
   
-  monotonicityConstraints<-matrix(nrow=0, ncol=sum(criteriaNumberOfBreakPoints)+2*numAlt)
+  monotonicityConstraints<-matrix(nrow=0, ncol=sum(criteriaNumberOfBreakPoints)+2*numAlt + numCat - 1)
   
   for (i in 1:length(criteriaNumberOfBreakPoints)){
     for (j in 1:(criteriaNumberOfBreakPoints[i]-1)){
-      tmp<-rep(0,sum(criteriaNumberOfBreakPoints)+2*numAlt)
+      tmp<-rep(0,sum(criteriaNumberOfBreakPoints)+2*numAlt + numCat - 1)
       if (i==1)
         pos <- j
       else
@@ -417,7 +365,7 @@ UTASTAR <- function(performanceTable, criteriaMinMax, criteriaNumberOfBreakPoint
   
   # normalization constraint for the upper values of the value functions (sum = 1)
   
-  tmp<-rep(0,sum(criteriaNumberOfBreakPoints)+2*numAlt)
+  tmp<-rep(0,sum(criteriaNumberOfBreakPoints)+2*numAlt + numCat - 1)
   
   for (i in 1:length(criteriaNumberOfBreakPoints)){
     if (i==1)
@@ -439,14 +387,16 @@ UTASTAR <- function(performanceTable, criteriaMinMax, criteriaNumberOfBreakPoint
   
   rhs<-c(rhs,1)
   
+  
+  
   # -------------------------------------------------------
   
   # now the normalizaiton constraints for the lower values of the value functions (= 0)
   
-  minValueFunctionsConstraints<-matrix(nrow=0, ncol=sum(criteriaNumberOfBreakPoints)+2*numAlt)
+  minValueFunctionsConstraints<-matrix(nrow=0, ncol=sum(criteriaNumberOfBreakPoints)+2*numAlt + numCat - 1)
   
   for (i in 1:length(criteriaNumberOfBreakPoints)){
-    tmp<-rep(0,sum(criteriaNumberOfBreakPoints)+2*numAlt)
+    tmp<-rep(0,sum(criteriaNumberOfBreakPoints)+2*numAlt + numCat - 1)
     if (i==1)
       pos <- i
     else
@@ -512,100 +462,106 @@ UTASTAR <- function(performanceTable, criteriaMinMax, criteriaNumberOfBreakPoint
   names(errorValuesPlus) <- rownames(performanceTable)
   names(errorValuesMinus) <- rownames(performanceTable)
   
-  # -------------------------------------------------------
+  # the categories' lower bounds
   
-  # the ranks of the alternatives 
+  categoriesLBs <- as.vector(lpSolution$solution[(sum(criteriaNumberOfBreakPoints)+2*numAlt+1):(sum(criteriaNumberOfBreakPoints)+2*numAlt+numCat-1)])
+  names(categoriesLBs) <- names(newCategoriesRanks[1:numCat-1])
   
-  outRanks <- rank(-overallValues, ties.method="min")
-  
-  # -------------------------------------------------------
-  
-  if ((numAlt >= 3) && !is.null(alternativesRanks))
-    tau = Kendall(alternativesRanks,outRanks)$tau[1]
-  else
-    tau = NULL
-  
-  # prepare the output
-  
-  out <- list(optimum = round(lpSolution$optimum, digits=5), valueFunctions = valueFunctions, overallValues = round(overallValues, digits=5), ranks = outRanks, errors = list(sigmaPlus = round(errorValuesPlus, digits=5), sigmaMinus = round(errorValuesMinus, digits=5)), Kendall = tau)
-  
-  
-  # -------------------------------------------------------
-  
-  # post-optimality analysis if the optimum is found and if kPostOptimality is not NULL, i.e. the solution space is not empty
-  
-  minWeights <- NULL
-  maxWeights <- NULL
-  averageValueFunctions <- NULL
-  
-  
-  if (!is.null(kPostOptimality) && (lpSolution$optimum == 0)){
-    
-    # add F \leq F* + k(F*) to the constraints, where F* is the optimum and k(F*) is a positive threshold, which is a small proportion of F*
-    
-    mat <- rbind(mat,obj)
-    dir <- c(dir,"<=")
-    rhs <- c(rhs,kPostOptimality)
-    
-    minWeights <- c()
-    maxWeights <- c()
-    combinedSolutions <- c()
-    
-    for (i in 1:numCrit){
-      
-      # first maximize the best ui for each criterion, then minimize it
-      # this gives the interval of variation for each weight
-      # the objective function : the first elements correspond to the ui's, the last one to the sigmas
-      
-      obj<-rep(0,sum(criteriaNumberOfBreakPoints))
-      obj<-c(obj,rep(0,2*numAlt))
-      
-      if (i==1)
-        pos <- criteriaNumberOfBreakPoints[i]
-      else
-        pos<-sum(criteriaNumberOfBreakPoints[1:(i-1)])+criteriaNumberOfBreakPoints[i]
-      
-      obj[pos] <- 1
-      
-      lpSolutionMin <- Rglpk_solve_LP(obj, mat, dir, rhs)
-      lpSolutionMax <- Rglpk_solve_LP(obj, mat, dir, rhs, max=TRUE)
-      
-      minWeights <- c(minWeights,lpSolutionMin$optimum)
-      maxWeights <- c(maxWeights,lpSolutionMax$optimum)
-      combinedSolutions <- rbind(combinedSolutions,lpSolutionMin$solution)
-      combinedSolutions <- rbind(combinedSolutions,lpSolutionMax$solution)
-    }
-    
-    names(minWeights) <- colnames(performanceTable)
-    names(maxWeights) <- colnames(performanceTable)
-    
-    # calculate the average value function, for which each component is the average value obtained for each of the programs above
-    averageSolution <- apply(combinedSolutions,2,mean)
-    
-    # create a structure containing the average value functions
-    
-    averageValueFunctions <- list()
-    
-    for (i in 1:length(criteriaNumberOfBreakPoints)){
-      tmp <- c() 
-      if (i==1)
-        pos <- 0
-      else
-        pos<-sum(criteriaNumberOfBreakPoints[1:(i-1)])
-      for (j in 1:criteriaNumberOfBreakPoints[i]){
-        tmp <- c(tmp,averageSolution[pos+j])
-      }
-      tmp<-rbind(criteriaBreakPoints[[i]],tmp)
-      colnames(tmp)<- NULL
-      rownames(tmp) <- c("x","y")
-      averageValueFunctions <- c(averageValueFunctions,list(tmp))
-    }
-    
-    names(averageValueFunctions) <- colnames(performanceTable)
-    
-  }
-  
-  out <- c(out, list(minimumWeightsPO = minWeights, maximumWeightsPO = maxWeights, averageValueFunctionsPO = averageValueFunctions))
+  #   
+  #   # -------------------------------------------------------
+  #   
+  #   # the ranks of the alternatives 
+  #   
+  #   outRanks <- rank(-overallValues, ties.method="min")
+  #   
+  #   # -------------------------------------------------------
+  #   
+  #   if ((numAlt >= 3) && !is.null(alternativesRanks))
+  #     tau = Kendall(alternativesRanks,outRanks)$tau[1]
+  #   else
+  #     tau = NULL
+  #   
+  #   # prepare the output
+  #   
+  out <- list(optimum = round(lpSolution$optimum, digits=5), valueFunctions = valueFunctions, overallValues = round(overallValues, digits=5), categoriesLBs = categoriesLBs, errors = list(sigmaPlus = round(errorValuesPlus, digits=5), sigmaMinus = round(errorValuesMinus, digits=5)))
+  #   
+  #   
+  #   # -------------------------------------------------------
+  #   
+  #   # post-optimality analysis if the optimum is found and if kPostOptimality is not NULL, i.e. the solution space is not empty
+  #   
+  #   minWeights <- NULL
+  #   maxWeights <- NULL
+  #   averageValueFunctions <- NULL
+  #   
+  #   
+  #   if (!is.null(kPostOptimality) && (lpSolution$optimum == 0)){
+  #     
+  #     # add F \leq F* + k(F*) to the constraints, where F* is the optimum and k(F*) is a positive threshold, which is a small proportion of F*
+  #     
+  #     mat <- rbind(mat,obj)
+  #     dir <- c(dir,"<=")
+  #     rhs <- c(rhs,kPostOptimality)
+  #     
+  #     minWeights <- c()
+  #     maxWeights <- c()
+  #     combinedSolutions <- c()
+  #     
+  #     for (i in 1:numCrit){
+  #       
+  #       # first maximize the best ui for each criterion, then minimize it
+  #       # this gives the interval of variation for each weight
+  #       # the objective function : the first elements correspond to the ui's, the last one to the sigmas
+  #       
+  #       obj<-rep(0,sum(criteriaNumberOfBreakPoints))
+  #       obj<-c(obj,rep(0,2*numAlt))
+  #       
+  #       if (i==1)
+  #         pos <- criteriaNumberOfBreakPoints[i]
+  #       else
+  #         pos<-sum(criteriaNumberOfBreakPoints[1:(i-1)])+criteriaNumberOfBreakPoints[i]
+  #       
+  #       obj[pos] <- 1
+  #       
+  #       lpSolutionMin <- Rglpk_solve_LP(obj, mat, dir, rhs)
+  #       lpSolutionMax <- Rglpk_solve_LP(obj, mat, dir, rhs, max=TRUE)
+  #       
+  #       minWeights <- c(minWeights,lpSolutionMin$optimum)
+  #       maxWeights <- c(maxWeights,lpSolutionMax$optimum)
+  #       combinedSolutions <- rbind(combinedSolutions,lpSolutionMin$solution)
+  #       combinedSolutions <- rbind(combinedSolutions,lpSolutionMax$solution)
+  #     }
+  #     
+  #     names(minWeights) <- colnames(performanceTable)
+  #     names(maxWeights) <- colnames(performanceTable)
+  #     
+  #     # calculate the average value function, for which each component is the average value obtained for each of the programs above
+  #     averageSolution <- apply(combinedSolutions,2,mean)
+  #     
+  #     # create a structure containing the average value functions
+  #     
+  #     averageValueFunctions <- list()
+  #     
+  #     for (i in 1:length(criteriaNumberOfBreakPoints)){
+  #       tmp <- c() 
+  #       if (i==1)
+  #         pos <- 0
+  #       else
+  #         pos<-sum(criteriaNumberOfBreakPoints[1:(i-1)])
+  #       for (j in 1:criteriaNumberOfBreakPoints[i]){
+  #         tmp <- c(tmp,averageSolution[pos+j])
+  #       }
+  #       tmp<-rbind(criteriaBreakPoints[[i]],tmp)
+  #       colnames(tmp)<- NULL
+  #       rownames(tmp) <- c("x","y")
+  #       averageValueFunctions <- c(averageValueFunctions,list(tmp))
+  #     }
+  #     
+  #     names(averageValueFunctions) <- colnames(performanceTable)
+  #     
+  #   }
+  #   
+  #   out <- c(out, list(minimumWeightsPO = minWeights, maximumWeightsPO = maxWeights, averageValueFunctionsPO = averageValueFunctions))
   
   return(out)
 }

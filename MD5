@@ -1,6 +1,6 @@
 351afb03c3e2ab9283dd3e251358405f *COPYING
-f3ac7ae8b69f9c8b3d2abe1e036dfdba *DESCRIPTION
-a8a95d5e2806bdeec7a80bc7a36a0748 *NAMESPACE
+34d676aed73fd938ed4c838c446ce766 *DESCRIPTION
+cc40c520f8e13d8b07fad3c84ccc2e36 *NAMESPACE
 cccf91305b0e22826f05a004147e9b58 *R/ElectreTRIBM.R
 56f9b12d93daf21067e829aa3abec459 *R/ElectreTRIBMIdentifyIncompatibleAssignments.R
 f7f9333e2e867abdc39d2135b77cfb55 *R/ElectreTRIBMInference.R
@@ -12,6 +12,7 @@ cbb296d80f14d2c3f9516d2aa83381d2 *R/additiveValueFunctionElicitation.R
 0d6c332b899850b0975bf1ce99b79899 *R/assignAlternativesToCategoriesByThresholds.R
 c1beaaa29a62fb3bb84d52b99f94cc7f *R/plotElectreTRISortingProblem.R
 058af9e8c711b0f82c7fdcbf4eb4ccd2 *R/plotPiecewiseLinearValueFunctions.R
+0a0691a88ebf4e8a36b50e8414336d03 *R/plotRadarPerformanceTable.R
 7c0b045892f5c9daed6fe50127388f46 *R/weightedSum.R
 a4e330d5373455b20e800c5e1a775ae5 *README
 dd8dcafa8539f5679e74317d16f13e98 *inst/extdata/ElectreTRIBMIdentifyIncompatibleAssignmentsModel.gmpl
@@ -27,6 +28,7 @@ e2ea6df47788037d49ae10e159beaad6 *man/applyPiecewiseLinearValueFunctionsOnPerfor
 bd01bc87437072eb9e519f4990d7bac6 *man/assignAlternativesToCategoriesByThresholds.Rd
 807f168576f4936ffa24e86cda3d93e9 *man/plotElectreTRISortingProblem.Rd
 cfe4bc43737cd21e11880d1a519a1d3a *man/plotPiecewiseLinearValueFunctions.Rd
+f39375b3de8a2ed83017a6ba56659736 *man/plotRadarPerformanceTable.Rd
 46b1d898d06c3339b9057a1fe4ac3209 *man/weightedSum.Rd
 3d3af3618164dc69864b36b761b0735e *tests/ElectreTRIBM.R
 7a6ea24db2b8920df27afe5b3c0eb5f6 *tests/ElectreTRIBMIdentifyIncompatibleAssignments.R
@@ -38,4 +40,5 @@ e94ef73ea1b241614d2b9c8f2d6efe60 *tests/UTASTAR.R
 fdb9816781d617a40f56dc37d9005b7a *tests/applyPiecewiseLinearValueFunctionsOnPerformanceTable.R
 f0aa50390ced3de7bc651b9428cfa9c3 *tests/assignAlternativesToCategoriesByThresholds.R
 d7f4d61fc0a8301b46ade06a7b955d49 *tests/plotElectreTRISortingProblem.R
+ceefac4bd05c6b50031a00e4be3bf6b3 *tests/plotRadarPerformanceTable.R
 e74ad38df329c41fec4d624d2f25d0d6 *tests/weightedSum.R

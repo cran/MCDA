@@ -1,6 +1,6 @@
 351afb03c3e2ab9283dd3e251358405f *COPYING
-34d676aed73fd938ed4c838c446ce766 *DESCRIPTION
-cc40c520f8e13d8b07fad3c84ccc2e36 *NAMESPACE
+23b1f669018a9790a07fde36b81b8839 *DESCRIPTION
+3daca30828076db8c3fcb6c1e2fd2066 *NAMESPACE
 cccf91305b0e22826f05a004147e9b58 *R/ElectreTRIBM.R
 56f9b12d93daf21067e829aa3abec459 *R/ElectreTRIBMIdentifyIncompatibleAssignments.R
 f7f9333e2e867abdc39d2135b77cfb55 *R/ElectreTRIBMInference.R
@@ -10,6 +10,7 @@ c5d2a741b34b6fe43bf53d5460ede6f4 *R/UTASTAR.R
 cbb296d80f14d2c3f9516d2aa83381d2 *R/additiveValueFunctionElicitation.R
 00374c9ad8588f0f570a8140978f5158 *R/applyPiecewiseLinearValueFunctionsOnPerformanceTable.R
 0d6c332b899850b0975bf1ce99b79899 *R/assignAlternativesToCategoriesByThresholds.R
+a2d7a06977919e2cb2f32e6ba9e8c010 *R/normalizePerformanceTable.R
 c1beaaa29a62fb3bb84d52b99f94cc7f *R/plotElectreTRISortingProblem.R
 058af9e8c711b0f82c7fdcbf4eb4ccd2 *R/plotPiecewiseLinearValueFunctions.R
 0a0691a88ebf4e8a36b50e8414336d03 *R/plotRadarPerformanceTable.R
@@ -26,6 +27,7 @@ c3e2930e90523b0b246caba3c93e19db *man/UTADIS.Rd
 629d2b3c99e64bbefd0acb30dcdcaf5c *man/additiveValueFunctionElicitation.Rd
 e2ea6df47788037d49ae10e159beaad6 *man/applyPiecewiseLinearValueFunctionsOnPerformanceTable.Rd
 bd01bc87437072eb9e519f4990d7bac6 *man/assignAlternativesToCategoriesByThresholds.Rd
+8fceab3fc3248f6db28447b6c221d214 *man/normalizePerformanceTable.Rd
 807f168576f4936ffa24e86cda3d93e9 *man/plotElectreTRISortingProblem.Rd
 cfe4bc43737cd21e11880d1a519a1d3a *man/plotPiecewiseLinearValueFunctions.Rd
 f39375b3de8a2ed83017a6ba56659736 *man/plotRadarPerformanceTable.Rd
@@ -39,6 +41,7 @@ e94ef73ea1b241614d2b9c8f2d6efe60 *tests/UTASTAR.R
 49e0bd9c2812ed348b256bf8442901e1 *tests/additiveValueFunctionElicitation.R
 fdb9816781d617a40f56dc37d9005b7a *tests/applyPiecewiseLinearValueFunctionsOnPerformanceTable.R
 f0aa50390ced3de7bc651b9428cfa9c3 *tests/assignAlternativesToCategoriesByThresholds.R
+6ee886491a7352430a90b169c037cb4f *tests/normalizePerformanceTable.R
 d7f4d61fc0a8301b46ade06a7b955d49 *tests/plotElectreTRISortingProblem.R
 ceefac4bd05c6b50031a00e4be3bf6b3 *tests/plotRadarPerformanceTable.R
 e74ad38df329c41fec4d624d2f25d0d6 *tests/weightedSum.R

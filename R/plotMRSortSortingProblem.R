@@ -37,7 +37,7 @@
 #
 ##############################################################################
 
-ElectreTRIBM <- function(performanceTable, categoriesLowerProfiles, criteriaWeights, criteriaMinMax, majorityThreshold, criteriaVetos = NULL, alternativesIDs = NULL, criteriaIDs = NULL, categoriesIDs = NULL){
+plotMRSortSortingProblem <- function(performanceTable, categoriesLowerProfiles, assignments, criteriaMinMax, criteriaUBs, criteriaLBs, alternativesIDs = NULL, criteriaIDs = NULL){
   
   ## check the input data
   
@@ -47,11 +47,11 @@ ElectreTRIBM <- function(performanceTable, categoriesLowerProfiles, criteriaWeig
   if (!(is.matrix(categoriesLowerProfiles)))
     stop("categoriesLowerProfiles should be a matrix")
   
+  if (!(is.vector(assignments)))
+    stop("assignments should be a vector")
+  
   if (!(is.vector(criteriaMinMax)))
     stop("criteriaMinMax should be a vector")
-  
-  if (!(is.vector(criteriaWeights)))
-    stop("criteriaWeights should be a vector")
   
   if (!(is.null(alternativesIDs) || is.vector(alternativesIDs)))
     stop("alternativesIDs should be a vector")
@@ -59,39 +59,21 @@ ElectreTRIBM <- function(performanceTable, categoriesLowerProfiles, criteriaWeig
   if (!(is.null(criteriaIDs) || is.vector(criteriaIDs)))
     stop("criteriaIDs should be a vector")
   
-  if (!(is.null(categoriesIDs) || is.vector(categoriesIDs)))
-    stop("categoriesIDs should be a vector")
-  
-  if (!(is.null(criteriaVetos) || is.matrix(criteriaVetos)))
-    stop("criteriaVetos should be a matrix")
-  
   ## filter the data according to the given alternatives and criteria
   
   if (!is.null(alternativesIDs)){
     performanceTable <- performanceTable[alternativesIDs,]
+    assignments <- assignments[alternativesIDs]
+    
   } 
   
   if (!is.null(criteriaIDs)){
     performanceTable <- performanceTable[,criteriaIDs]
-    criteriaWeights <- criteriaWeights[criteriaIDs]
     criteriaMinMax <- criteriaMinMax[criteriaIDs]
     categoriesLowerProfiles <- categoriesLowerProfiles[,criteriaIDs]
+    criteriaUBs <- criteriaUBs[criteriaIDs]
+    criteriaLBs <- criteriaLBs[criteriaIDs]
   }
-  
-  if ((!is.null(criteriaIDs)) && (!is.null(criteriaVetos))){
-    criteriaVetos <- criteriaVetos[,criteriaIDs]  
-  }
-  
-  if ((!is.null(categoriesIDs)) && (!is.null(criteriaVetos))){
-    criteriaVetos <- criteriaVetos[categoriesIDs,]
-  }
-    
-  if (!is.null(categoriesIDs)){
-    categoriesLowerProfiles <- categoriesLowerProfiles[categoriesIDs,]
-  }
-  
-  
-  
   
   # data is filtered, check for some data consistency
   
@@ -108,73 +90,80 @@ ElectreTRIBM <- function(performanceTable, categoriesLowerProfiles, criteriaWeig
   
   numCat <- dim(categoriesLowerProfiles)[1]
   
-  
-  
   # -------------------------------------------------------
   
-  outranking <- function(alternativePerformances, profilePerformances, criteriaWeights, criteriaMinMax, majorityThreshold, profileCriteriaVetos=NULL){
-    localConcordance <- rep(0,numCrit)
-    veto <- 0
+  normalizedPerformanceTable <- matrix(nrow=numAlt,ncol=numCrit)
+  
+  for (j in 1:numAlt){
     for (i in 1:numCrit){
-      if (criteriaMinMax[i] == "min"){
-        if (alternativePerformances[i] <= profilePerformances[i])
-          localConcordance[i] = 1
-        if (!is.null(profileCriteriaVetos)){
-          # if (alternativePerformances[i] >= profilePerformances[i] + criteriaVetos[i])
-          if (!is.na(profileCriteriaVetos[i])){
-            if (alternativePerformances[i] >= profileCriteriaVetos[i])
-              veto = 1 
-          }
-        }
-      }
-      else{
-        if (alternativePerformances[i] >= profilePerformances[i])
-          localConcordance[i] = 1
-        if (!is.null(profileCriteriaVetos)){
-          # if (alternativePerformances[i] >= profilePerformances[i] + criteriaVetos[i])
-          if (!is.na(profileCriteriaVetos[i])){
-            if (alternativePerformances[i] <= profileCriteriaVetos[i])
-              veto = 1 
-          }
-        }
-      }
+      if(criteriaMinMax[i] == "min")
+        normalizedPerformanceTable[j,i] <- 1-(performanceTable[j,i]-criteriaLBs[i])/(criteriaUBs[i]-criteriaLBs[i])
+      else
+        normalizedPerformanceTable[j,i] <- (performanceTable[j,i]-criteriaLBs[i])/(criteriaUBs[i]-criteriaLBs[i])
     }
-    
-    concordance = sum(localConcordance*criteriaWeights)
-    
-    if ((veto == 1) || (concordance < majorityThreshold))
-      return(FALSE)
-    else 
-      return(TRUE)
   }
   
+  normalizedProfiles <- matrix(nrow=numCat,ncol=numCrit)
   
-  assignments <- c()
-  
-  for (i in 1:numAlt){
-    categoryNotFound <- TRUE
-    k <- 1
-    while ((categoryNotFound) && k<=numCat-1){
-      if (is.null(criteriaVetos)){
-        if(outranking(performanceTable[i,],categoriesLowerProfiles[k,], criteriaWeights, criteriaMinMax, majorityThreshold, profileCriteriaVetos = NULL)){
-          category <- k
-          categoryNotFound <- FALSE
-        }
-        else
-          k<-k+1
-      } else {
-        if(outranking(performanceTable[i,],categoriesLowerProfiles[k,], criteriaWeights, criteriaMinMax, majorityThreshold, profileCriteriaVetos = criteriaVetos[k,])){
-          category <- k
-          categoryNotFound <- FALSE
-        }
-        else
-          k<-k+1
-      }
+  for (j in 1:numCat){
+    for (i in 1:numCrit){
+      if(criteriaMinMax[i] == "min")
+        normalizedProfiles[j,i] <- 1-(categoriesLowerProfiles[j,i]-criteriaLBs[i])/(criteriaUBs[i]-criteriaLBs[i])
+      else
+        normalizedProfiles[j,i] <- (categoriesLowerProfiles[j,i]-criteriaLBs[i])/(criteriaUBs[i]-criteriaLBs[i])
     }
-    assignments <- c(assignments, rownames(categoriesLowerProfiles)[k]) 
   }
   
-  names(assignments) <- rownames(performanceTable)
+  col.rainbow <- rainbow(numAlt)
   
-  return(assignments)
+  palette(col.rainbow)
+  
+  ylim=c(min(normalizedPerformanceTable)-0.1,max(normalizedPerformanceTable)+0.1)
+  
+  # Expand right side of clipping rect to make room for the legend
+  # par(xpd=T, mar=par()$mar+c(0,0,0,6))
+  
+  # par(mfrow=c(1,2))
+  
+  #layout(c(1, 2), widths=c(7, 1))
+  
+  layout(matrix(c(1,2),1), widths = c(4,2))
+  
+  plot(1:numCrit,normalizedProfiles[1,],
+       type="l",
+       col="black",
+       ylim=ylim,
+       xlab = "",
+       ylab="",
+       xaxt="n",
+       yaxt="n",
+       lwd=2,
+       lty=2)
+  # the other profiles (except the lower one)
+  for (i in (2:numCat-1))
+    lines(1:numCrit,normalizedProfiles[i,],col="black", lwd=2, lty=2)
+  for (i in 1:numCrit){
+    lines(c(i,i),ylim, col="gray")
+  }
+  axis(1,at=c(1:numCrit),labels=colnames(performanceTable))
+  
+  for (i in 1:(numCat-1)){
+    text(c(1:numCrit), normalizedProfiles[i,], labels = categoriesLowerProfiles[i,], pos=1)
+  }
+  
+  text(1, ylim[2], labels = dimnames(performanceTable)[[2]][1], pos=4)
+  
+   for (i in 2:(numCrit)){
+    text(i, ylim[2], labels = dimnames(performanceTable)[[2]][i], pos=2)
+   }
+    
+  for (i in (1:numAlt))
+    points(1:numCrit,normalizedPerformanceTable[i,],type="b",pch=which(assignments[rownames(performanceTable)[i]]==rownames(categoriesLowerProfiles)), col=i)
+  
+  par(mar=c(0, 0, 0, 0))
+  plot.new()
+  
+  legend("center", c(rownames(performanceTable),rownames(categoriesLowerProfiles)), cex=0.8, col=c(c(1:numAlt),rep("black",numCat)), 
+         lwd=1, bty="n",pch=c(rep(0,numAlt),c(1:numCat)));
+  
 }

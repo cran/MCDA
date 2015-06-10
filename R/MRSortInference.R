@@ -5,7 +5,7 @@
 # Contributors:
 #   Patrick Meyer <patrick.meyer@telecom-bretagne.eu>
 #   Sébastien Bigaret <sebastien.bigaret@telecom-bretagne.eu>
-#    
+#  	
 # This software, MCDA, is a package for the R statistical software which 
 # allows to use MCDA algorithms and methods. 
 # 
@@ -37,7 +37,7 @@
 #
 ##############################################################################
 
-ElectreTRIBMIdentifyIncompatibleAssignments <- function(performanceTable, assignments, categoriesRanks, criteriaMinMax, alternativesIDs = NULL, criteriaIDs = NULL){
+MRSortInference <- function(performanceTable, assignments, categoriesRanks, criteriaMinMax, alternativesIDs = NULL, criteriaIDs = NULL){
   
   ## check the input data
   
@@ -88,7 +88,7 @@ ElectreTRIBMIdentifyIncompatibleAssignments <- function(performanceTable, assign
   
   tempPath <- tempdir()
   
-  modelFile <- system.file("extdata","ElectreTRIBMIdentifyIncompatibleAssignmentsModel.gmpl", package="MCDA")
+  modelFile <- system.file("extdata","MRSortInferenceModel.gmpl", package="MCDA")
   
   dataFile <- tempfile()
   
@@ -184,9 +184,7 @@ ElectreTRIBMIdentifyIncompatibleAssignments <- function(performanceTable, assign
   
   cat("param gamma:=0.01;\n")
   
-  cat("param B:=1000;\n")
-  
-  cat("end;")
+  cat("end;\n")
   sink()
   
   lp<-initProbGLPK()
@@ -206,7 +204,7 @@ ElectreTRIBMIdentifyIncompatibleAssignments <- function(performanceTable, assign
     mplBuildProbGLPK(tran,lp)
   else 
     stop(return_codeGLPK(out))
-  
+
   solveMIPGLPK(lp)
   
   if(mipStatusGLPK(lp)==5){
@@ -220,115 +218,45 @@ ElectreTRIBMIdentifyIncompatibleAssignments <- function(performanceTable, assign
     for (i in 1:length(solution))
       varnames <- c(varnames,getColNameGLPK(lp,i))
     
+    lambda <- solution[varnames=="lambda"]
     
+    weightsnames <- c()
     
-    #     weightsnames <- c()
-    #     
-    #     for (i in 1:numCrit)
-    #     {
-    #       weightsnames <- c(weightsnames,paste("w[",i,"]",sep=""))
-    #     }
-    #     
-    #     weights <- c()
-    #     
-    #     for (i in 1:numCrit)
-    #       weights <- c(weights,solution[varnames==weightsnames[i]])
-    #     
-    #     names(weights) <- colnames(performanceTable)
-    #     
-    #     ptknames <- matrix(nrow=numCat,ncol=numCrit)
-    #     
-    #     for (i in 2:(numCat+1)){
-    #       for (j in 1:numCrit)
-    #       {
-    #         ptknames[i-1,j] <- paste("PTk[",i,",",j,"]",sep="")
-    #       }
-    #     }
-    #     
-    #     profilesPerformances <- matrix(nrow=numCat,ncol=numCrit)
-    #     
-    #     for (i in 1:numCat){
-    #       for (j in 1:numCrit)
-    #         profilesPerformances[i,j] <- solution[varnames==ptknames[i,j]]
-    #     }
-    #     
-    #     rownames(profilesPerformances) <- names(categoriesRanks)
-    #     colnames(profilesPerformances) <- colnames(performanceTable)
-    #     
-    #     epsilon <- solution[varnames=="ksep"]
-    
-    onoffnames <- c()
-    
-    for (i in 1:numAlt)
+    for (i in 1:numCrit)
     {
-      onoffnames <- c(onoffnames,paste("OnOff[",i,"]",sep=""))
+      weightsnames <- c(weightsnames,paste("w[",i,"]",sep=""))
     }
     
-    onOff <- c()
+    weights <- c()
     
-    for (i in 1:numAlt)
-      if(solution[varnames==onoffnames[i]] == 1)
-        onOff <- c(onOff,TRUE)
-    else
-      onOff <- c(onOff,FALSE)
+    for (i in 1:numCrit)
+      weights <- c(weights,solution[varnames==weightsnames[i]])
     
-    names(onOff) <- rownames(performanceTable)
+    names(weights) <- colnames(performanceTable)
     
-    numIncompatibleAssignments <- mipObjValGLPK(lp)
-    #     
-    #     
-    #     
-    #   
-    #   file.copy(dataFile,"/home/pat/temp/")
-    #   
-    #   lp<-initProbGLPK(ptrtype = "glpk_prob")
-    #   
-    #   tran<-mplAllocWkspGLPK(ptrtype = "tr_wksp")
-    #   
-    #   setMIPParmGLPK(PRESOLVE, GLP_ON)
-    #   
-    #   out<-mplReadModelGLPK(tran, dataFile, skip=0)
-    #   
-    #   if (is.null(out))
-    #     out <- mplGenerateGLPK(tran)
-    #   else 
-    #     stop(return_codeGLPK(out))
-    #   
-    #   if (is.null(out))
-    #     mplBuildProbGLPK(tran,lp)
-    #   else 
-    #     stop(return_codeGLPK(out))
-    #   
-    #   out<-solveMIPGLPK(lp)
-    #   
-    #   if(mipStatusGLPK(lp)==5){
-    #     
-    #     solution <- mipColsValGLPK(lp)
-    #     epsilon <- mipObjValGLPK(lp)
-    #     
-    #     lambda <- solution[1]
-    #     
-    #     weights <- solution[2:(2+numCrit-1)]
-    #     
-    #     names(weights) <- colnames(performanceTable)
-    #     
-    #     b<-2+numCrit + numCrit
-    #     e<-2+numCrit + numCrit + numCat * numCrit -1
-    #     
-    #     profilesPerformances <- matrix(solution[b:e],nrow=numCat,ncol=numCrit,byrow=TRUE)
-    #     
-    #     colnames(profilesPerformances) <- colnames(performanceTable)
-    #     
-    #     rownames(profilesPerformances) <- names(categoriesRanks)
-    #     
-    #     b<-e+1
-    #     e<-b+numAlt-1
+    ptknames <- matrix(nrow=numCat,ncol=numCrit)
     
-    #     onOff <- c(solution[b:e])
-    #     
-    #     names(onOff) <- rownames(performanceTable)
+    for (i in 2:(numCat+1)){
+      for (j in 1:numCrit)
+      {
+        ptknames[i-1,j] <- paste("PTk[",i,",",j,"]",sep="")
+      }
+    }
     
-    return(list(numIncompatibleAssignments = numIncompatibleAssignments, incompatibleAssignments = onOff))
+    profilesPerformances <- matrix(nrow=numCat,ncol=numCrit)
+    
+    for (i in 1:numCat){
+      for (j in 1:numCrit)
+        profilesPerformances[i,j] <- solution[varnames==ptknames[i,j]]
+    }
+    
+    rownames(profilesPerformances) <- names(categoriesRanks)
+    colnames(profilesPerformances) <- colnames(performanceTable)
+    
+    epsilon <- solution[varnames=="ksep"]
+    
+    return(list(lambda = round(lambda,digits=5), epsilon = round(epsilon,digits=5), weights = round(weights,digits=5), profilesPerformances = round(profilesPerformances,digits=5)))
+
   }
   else
     return(NULL)

@@ -66,7 +66,7 @@ s.t. normalisedWeights: sum{i in 1..F} w[i] = 1;
 /* constrain profile values */
 s.t. bottomP{i in 1..F}: PTk[K+1,i] = (Fmax[i] + gamma) * (1 - Fdir[i]) / 2 + (Fmin[i] - gamma) * (Fdir[i] + 1) / 2;
 s.t. topP{i in 1..F}: PTk[1,i] = (Fmax[i] + gamma) * (Fdir[i] + 1) / 2 + (Fmin[i] - gamma) * (1 - Fdir[i]) / 2;
-s.t. bottomV{i in 1..F}: PTv[K+1,i] = PTk[K+1,i];
+s.t. bottomV{i in 1..F}: PTv[K+1,i] = PTk[K+1,i] - Fdir[i] * gamma;
 s.t. topV{i in 1..F}: PTv[1,i] = PTk[1,i];
 /* distance between weights */
 s.t. distanceWeights{i in 1..(F-1), j in (i+1)..F}: w[i] - w[j] = delta1[i,j] - delta2[i,j];
@@ -105,6 +105,8 @@ s.t. gSlow3{x in 1..X}: gSlow[x] >= sum{i in 1..F} wlClow[x,i] - gVlow[x];
 s.t. dominanceP{k in 1..K, i in 1..F}: Fdir[i] * PTk[(k+1),i] <= Fdir[i] * PTk[k,i] - delta3[i] * (Fmax[i]-Fmin[i]+1);
 /* dominance between profiles and veto profiles */
 s.t. dominancePV{k in 2..K, i in 1..F}: Fdir[i] * PTv[k,i] + gamma <= Fdir[i] * PTk[k,i];
+/* dominance between veto profiles */
+s.t. dominanceV{k in 1..K, i in 1..F}: Fdir[i] * PTv[(k+1),i] <= Fdir[i] * PTv[k,i]; 
 /* alternative outranks lower profile */
 s.t. Slow{x in 1..X}: lambda <= gSlow[x];
 /* alternative does not outrank upper profile */

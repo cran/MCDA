@@ -1,5 +1,5 @@
 351afb03c3e2ab9283dd3e251358405f *COPYING
-76fb71e23a226a3d6b8316cecd5665a1 *DESCRIPTION
+79404ed66db8596dd5a62115bd6ec9ae *DESCRIPTION
 5821c253f7f0aa28e0992211feac2038 *NAMESPACE
 20cac4f935a89369683a2410878e5f16 *R/AHP.R
 eb8d7a349c1cd939622209f03447a2da *R/LPDMRSort.R
@@ -28,6 +28,8 @@ b942661291a6d1589b501323e9338434 *R/plotAlternativesValuesPreorder.R
 2f72e3a8cc7a4ef5ef73e6e48f820d4c *README
 32754009978d18e8f1c9aa834f2691b4 *inst/datasets/performanceTable.csv
 6a4865dee4f6f0920a7e46de6508d48e *inst/datasets/performanceTable2.csv
+13fa89a0dc282897e7de607097e6667a *inst/examples/articleExample.R
+bd174af445cdc52ce6fded0b14522156 *inst/examples/weightedSumExample.R
 3560cb685c7ada167d078925186e8fbf *inst/extdata/MRSortDIdentifyInvalidAssignmentsSet.gmpl
 054911e3e65f37b3d5c65cbf9dd0d37b *inst/extdata/MRSortDIdentifyMinimalInvalidAssignmentsSet.gmpl
 794297439d31fc3dfe7e08038e0095d2 *inst/extdata/MRSortDInferenceModel.gmpl
@@ -145,8 +147,6 @@ e94ef73ea1b241614d2b9c8f2d6efe60 *tests/UTASTAR.R
 49e0bd9c2812ed348b256bf8442901e1 *tests/additiveValueFunctionElicitation.R
 ec2ee09b893afaa62817bcdb106f6f60 *tests/applyPiecewiseLinearValueFunctionsOnPerformanceTable.R
 f1a5a4c646159caa3cb281266c3f4647 *tests/assignAlternativesToCategoriesByThresholds.R
-bd174af445cdc52ce6fded0b14522156 *tests/example.R
-13fa89a0dc282897e7de607097e6667a *tests/example2.R
 6ee886491a7352430a90b169c037cb4f *tests/normalizePerformanceTable.R
 2a09bbf9fdc61a394da4adf4fa16ebc9 *tests/pairwiseConsistencyMeasures.R
 abc720dba17a3002cfe0aad24a26887d *tests/plotAlternativesValuesPreorder.R

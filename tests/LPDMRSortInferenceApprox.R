@@ -13,7 +13,7 @@ rownames(performanceTable) <- c("a1","a2","a3","a4","a5","a6","a7","a8","a9","a1
 
 colnames(performanceTable) <- c("c1","c2","c3")
 
-assignments <-c("P","P","P","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F")
+assignments <-c("P","P","P","F","F","F","F","F","F","P","P","P","P","P","P","P","P","P","F","F","F","F","F","F")
 
 names(assignments) <- rownames(performanceTable)
 
@@ -27,15 +27,10 @@ names(criteriaMinMax) <- colnames(performanceTable)
 
 set.seed(1)
 
-x<-MRSortInferenceApprox(performanceTable, assignments, categoriesRanks, 
-                         criteriaMinMax, veto = TRUE,
-                         alternativesIDs = c("a1","a2","a3","a4","a5","a6","a7"))
+x<-LPDMRSortInferenceApprox(performanceTable, criteriaMinMax, categoriesRanks, assignments,
+                            majorityRules = c("dV","Dv","dv"),
+                            timeLimit = 180, populationSize = 30, alternativesIDs = c("a1","a2","a3","a4","a5","a6","a7"))
 
-print(x)
+assignments2 <- LPDMRSort(performanceTable, x$profilesPerformances, x$criteriaWeights, criteriaMinMax, x$majorityThreshold, criteriaVetos=x$vetoPerformances, criteriaDictators=x$dictatorPerformances, majorityRule = x$majorityRule, alternativesIDs = c("a1","a2","a3","a4","a5","a6","a7"))
 
-ElectreAssignments<-MRSort(performanceTable, x$profilesPerformances, 
-                        x$criteriaWeights, criteriaMinMax, x$majorityThreshold, criteriaVetos=x$vetoPerformances, alternativesIDs = c("a1","a2","a3","a4","a5","a6","a7"))
-
-print(all(ElectreAssignments == assignments[c("a1","a2","a3","a4","a5","a6","a7")]))
-
-stopifnot(all(assignments[c("a1","a2","a3","a4","a5","a6","a7")] == ElectreAssignments))
+stopifnot(all(assignments[c("a1","a2","a3","a4","a5","a6","a7")] == assignments2))

@@ -1,4 +1,4 @@
-LPDMRSortInferenceExact <- function(performanceTable, assignments, categoriesRanks, criteriaMinMax, majorityRule = "", readableWeights = FALSE, readableProfiles = FALSE, minmaxLPD = FALSE, alternativesIDs = NULL, criteriaIDs = NULL, solver="glpk", cplexTimeLimit = NULL, cplexIntegralityTolerance = NULL, cplexThreads = NULL){
+LPDMRSortInferenceExact <- function(performanceTable, assignments, categoriesRanks, criteriaMinMax, majorityRule = "M", readableWeights = FALSE, readableProfiles = FALSE, minmaxLPD = FALSE, alternativesIDs = NULL, criteriaIDs = NULL, solver="glpk", cplexTimeLimit = NULL, cplexIntegralityTolerance = NULL, cplexThreads = NULL){
   
   ## check the input data
   if (!((is.matrix(performanceTable) || (is.data.frame(performanceTable))))) 
@@ -14,9 +14,9 @@ LPDMRSortInferenceExact <- function(performanceTable, assignments, categoriesRan
     stop("criteriaMinMax should be a vector")
   
   if (!is.character(majorityRule))
-    stop("majorityRule should be a boolean")
-  else if (!(majorityRule %in% c("","V","D","v","d","dV","Dv","dv")))
-    stop("majorityRule needs to take values in {'','V','D','v','d','dV','Dv','dv'}")
+    stop("majorityRule should be a character or a string of characters")
+  else if (!(majorityRule %in% c("M","V","D","v","d","dV","Dv","dv")))
+    stop("majorityRule needs to take values in {'M','V','D','v','d','dV','Dv','dv'}")
   
   if (!is.logical(readableWeights))
     stop("readableWeights should be a boolean")
@@ -64,7 +64,7 @@ LPDMRSortInferenceExact <- function(performanceTable, assignments, categoriesRan
   
   # get model file depending on function options
 
-  modelfilename <- paste("MRSort", c("","V","D","DV1","DV2","DV3","DV4","DV5")[match(majorityRule,c("","V","D","v","d","dV","Dv","dv"))], "InferenceModel", sep = "")
+  modelfilename <- paste("MRSort", c("","V","D","DV1","DV2","DV3","DV4","DV5")[match(majorityRule,c("M","V","D","v","d","dV","Dv","dv"))], "InferenceModel", sep = "")
   
   if(readableWeights || readableProfiles)
   {
@@ -260,20 +260,19 @@ LPDMRSortInferenceExact <- function(performanceTable, assignments, categoriesRan
     }
   }
   
-  if (!error){  
+  humanReadableStatus <- "Unknown"
+  if(solverStatus %in% c(5,101,102))
+    humanReadableStatus <- "Solution is optimal"
+  else if(solverStatus %in% c(3,4,103,102))
+    humanReadableStatus <- "Solution is infeasible"
+  else if(solverStatus %in% c(111,112))
+    humanReadableStatus <- "Memory limit"
+  else if(solverStatus %in% c(107,108))
+    humanReadableStatus <- "Time limit"
+  else if(solverStatus %in% c(6,118))
+    humanReadableStatus <- "No unbounded solution"
   
-  # solveMIPGLPK(lp)
-  # 
-  # if(mipStatusGLPK(lp)==5){
-  #   
-  #   mplPostsolveGLPK(tran, lp, sol = GLP_MIP)
-  #   
-  #   solution <- mipColsValGLPK(lp)
-  #   
-  #   varnames <- c()
-  #   
-  #   for (i in 1:length(solution))
-  #     varnames <- c(varnames,getColNameGLPK(lp,i))
+  if (!error){
     
     lambda <- solution[varnames=="lambda"]
     
@@ -358,9 +357,11 @@ LPDMRSortInferenceExact <- function(performanceTable, assignments, categoriesRan
       colnames(dictatorPerformances) <- colnames(performanceTable)
     }
     
-    return(list(lambda = lambda, weights = weights, profilesPerformances = profilesPerformances, vetoPerformances = vetoPerformances, dictatorPerformances = dictatorPerformances, solverStatus = solverStatus))
+    return(list(lambda = lambda, weights = weights, profilesPerformances = profilesPerformances, vetoPerformances = vetoPerformances, dictatorPerformances = dictatorPerformances, solverStatus = solverStatus, humanReadableStatus = humanReadableStatus))
     
   }
   else
-    return(list(solverStatus = solverStatus))
+  {
+    return(list(solverStatus = solverStatus, humanReadableStatus = humanReadableStatus))
+  }
 }

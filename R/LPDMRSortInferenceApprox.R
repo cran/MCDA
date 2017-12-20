@@ -29,6 +29,9 @@ LPDMRSortInferenceApprox <- function(performanceTable, criteriaMinMax, categorie
   if(!all(assignments %in% names(categoriesRanks)))
     stop("some of the assignments reference a category which does not exist in categoriesRanks")
   
+  if(!all(sort(categoriesRanks) == 1:length(categoriesRanks)))
+    stop("categoriesRanks should contain a permutation of the category indices (from 1 to the number of categories)")
+  
   if (!is.character(majorityRules))
     stop("majorityRules should be a character, a string of characters, or a vector of strings of characters")
   else if (!(all(majorityRules %in% c("M","V","D","v","d","dV","Dv","dv"))))
@@ -97,17 +100,17 @@ LPDMRSortInferenceApprox <- function(performanceTable, criteriaMinMax, categorie
     {
       weightedSum <- 0
       
-      for (i in 1:numCrit)
+      for (crit in names(criteriaMinMax))
       {
-        if (criteriaMinMax[i] == "min")
+        if (criteriaMinMax[crit] == "min")
         {
-          if (alternativePerformances[i] %<=% profilesPerformances[k,i])
-            weightedSum <- weightedSum + criteriaWeights[i]
+          if (alternativePerformances[crit] %<=% profilesPerformances[k,crit])
+            weightedSum <- weightedSum + criteriaWeights[crit]
         }
         else
         {
-          if (alternativePerformances[i] %>=% profilesPerformances[k,i])
-            weightedSum <- weightedSum + criteriaWeights[i]
+          if (alternativePerformances[crit] %>=% profilesPerformances[k,crit])
+            weightedSum <- weightedSum + criteriaWeights[crit]
         }
       }
       
@@ -115,11 +118,11 @@ LPDMRSortInferenceApprox <- function(performanceTable, criteriaMinMax, categorie
       
       if(majorityRule %in% c("V","v","dV","Dv","dv"))
       {
-        for (i in 1:numCrit)
+        for (crit in names(criteriaMinMax))
         {
-          if (criteriaMinMax[i] == "min")
+          if (criteriaMinMax[crit] == "min")
           {
-            if (alternativePerformances[i] %>=% vetoPerformances[k,i])
+            if (alternativePerformances[crit] %>=% vetoPerformances[k,crit])
             {
               vetoActive <- TRUE
               break
@@ -127,7 +130,7 @@ LPDMRSortInferenceApprox <- function(performanceTable, criteriaMinMax, categorie
           }
           else
           {
-            if (alternativePerformances[i] %<=% vetoPerformances[k,i])
+            if (alternativePerformances[crit] %<=% vetoPerformances[k,crit])
             {
               vetoActive <- TRUE
               break
@@ -140,11 +143,11 @@ LPDMRSortInferenceApprox <- function(performanceTable, criteriaMinMax, categorie
       
       if(majorityRule %in% c("D","d","dV","Dv","dv"))
       {
-        for (i in 1:numCrit)
+        for (crit in names(criteriaMinMax))
         {
-          if (criteriaMinMax[i] == "min")
+          if (criteriaMinMax[crit] == "min")
           {
-            if (alternativePerformances[i] %<=% dictatorPerformances[k,i])
+            if (alternativePerformances[crit] %<=% dictatorPerformances[k,crit])
             {
               dictatorActive <- TRUE
               break
@@ -152,7 +155,7 @@ LPDMRSortInferenceApprox <- function(performanceTable, criteriaMinMax, categorie
           }
           else
           {
-            if (alternativePerformances[i] %>=% dictatorPerformances[k,i])
+            if (alternativePerformances[crit] %>=% dictatorPerformances[k,crit])
             {
               dictatorActive <- TRUE
               break
@@ -659,6 +662,40 @@ LPDMRSortInferenceApprox <- function(performanceTable, criteriaMinMax, categorie
   rownames(bestIndividual$vetoPerformances) <- rownames(bestIndividual$profilesPerformances)
   
   rownames(bestIndividual$dictatorPerformances) <- rownames(bestIndividual$profilesPerformances)
+  
+  if(bestIndividual$majorityRule %in% c("V","v","d","dV","Dv","dv"))
+  {
+    # determine which vetoes are actually used and remove those that are simply an artefact of the linear program
+    
+    used <- LPDMRSortIdentifyUsedVetoProfiles(performanceTable, assignments, sort(categoriesRanks), criteriaMinMax, bestIndividual$majorityThreshold, bestIndividual$criteriaWeights, bestIndividual$profilesPerformances, bestIndividual$vetoPerformances, bestIndividual$dictatorPerformances, bestIndividual$majorityRule, alternativesIDs, criteriaIDs)
+
+    for (k in (numCat-1):1)
+    {
+      cat <- names(categoriesRanks)[categoriesRanks == k]
+      for (j in 1:numCrit)
+      {
+        if (!used[cat,j])
+          bestIndividual$vetoPerformances[cat,j] <- NA
+      }
+    }
+  }
+  
+  if(bestIndividual$majorityRule %in% c("D","v","d","dV","Dv","dv"))
+  {
+    # determine which dictators are actually used and remove those that are simply an artefact of the linear program
+    
+    used <- LPDMRSortIdentifyUsedDictatorProfiles(performanceTable, assignments, sort(categoriesRanks), criteriaMinMax, bestIndividual$majorityThreshold, bestIndividual$criteriaWeights, bestIndividual$profilesPerformances, bestIndividual$dictatorPerformances, bestIndividual$vetoPerformances, bestIndividual$majorityRule, alternativesIDs, criteriaIDs)
+    
+    for (k in (numCat-1):1)
+    {
+      cat <- names(categoriesRanks)[categoriesRanks == k]
+      for (j in 1:numCrit)
+      {
+        if (!used[cat,j])
+          bestIndividual$dictatorPerformances[cat,j] <- NA
+      }
+    }
+  }
   
   return(bestIndividual)
 }

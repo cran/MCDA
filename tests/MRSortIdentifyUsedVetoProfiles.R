@@ -7,7 +7,7 @@ performanceTable <- rbind(
   c(4,20,2),
   c(2,20,0),
   c(6,40,0),
-  c(30,30,3))
+  c(30,10,3))
 
 rownames(performanceTable) <- c("RER","METRO1","METRO2","BUS","TAXI")
 
@@ -35,32 +35,24 @@ names(criteriaMinMax) <- colnames(performanceTable)
 
 # vetos
 
-criteriaVetos <- rbind(c(9, NA, NA),c(NA, NA, 0),c(NA,NA,NA))
+criteriaVetos <- rbind(c(9, 50, -1),c(50, 50, 0),c(NA,NA,NA))
 
 colnames(criteriaVetos) <- colnames(performanceTable)
 rownames(criteriaVetos) <- c("Good","Medium","Bad")
 
 # weights
 
-criteriaWeights <- c(1,3,2)
+criteriaWeights <- c(1/6,3/6,2/6)
 
 names(criteriaWeights) <- colnames(performanceTable)
 
+# assignments
 
-# MRSort
+assignments <- c("Good","Medium","Bad","Bad","Bad")
 
-assignments<-MRSort(performanceTable, categoriesLowerProfiles, categoriesRanks, criteriaWeights, criteriaMinMax, 3, criteriaVetos = criteriaVetos)
 
-stopifnot(all(assignments == c("Good","Medium","Bad","Bad","Bad")))
+# MRSortIndetifyUsedVetoProfiles
 
-# un peu de filtrage
+used<-MRSortIdentifyUsedVetoProfiles(performanceTable, assignments, categoriesRanks, criteriaMinMax, 0.5, criteriaWeights, categoriesLowerProfiles, criteriaVetos)
 
-assignments<-MRSort(performanceTable, categoriesLowerProfiles, categoriesRanks, criteriaWeights, criteriaMinMax, 2, categoriesIDs = c("Medium","Bad"), criteriaIDs = c("Price","Time"), alternativesIDs = c("RER", "BUS"))
-
-stopifnot(all(assignments == c("Medium","Bad")))
-
-# un test pour combiner tous les filtrages avec le veto
-
-assignments<-MRSort(performanceTable, categoriesLowerProfiles, categoriesRanks, criteriaWeights, criteriaMinMax, 2, criteriaVetos = criteriaVetos, categoriesIDs = c("Medium","Bad"), criteriaIDs = c("Price","Time"), alternativesIDs = c("RER", "BUS"))
-
-stopifnot(all(assignments == c("Medium","Bad")))
+stopifnot(all(as.vector(used) == c(TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE)))

@@ -967,6 +967,9 @@ def UTASTAR(
             )
             averageValueFunctions = pd.concat([averageValueFunctions, tmp], axis=1)
 
+    # TODO re calculate overall values after post optimality 
+
+
     out = pd.concat([out, minWeights, maxWeights, averageValueFunctions], axis=1)
 
     return (
@@ -982,5 +985,5 @@ def UTASTAR(
         averageValueFunctions,
     )
 
-    
+
 

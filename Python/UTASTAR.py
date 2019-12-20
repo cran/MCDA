@@ -786,6 +786,7 @@ def UTASTAR(
 
     overallValues = overallValues.transpose()
     overallValues.columns = performanceTable.index.values
+    overallValues.index = "overallValues"
 
     # -------------------------------------------------------
 
@@ -813,12 +814,15 @@ def UTASTAR(
 
     errorValuesMinus = errorValuesMinus.transpose()
     errorValuesPlus = errorValuesPlus.transpose()
+    errorValuesMinus.index = "ErrorValuesMinus"
+    errorValuesPlus.index = "ErrorValuesPlus"
 
     # -------------------------------------------------------
 
     # the ranks of the alternatives
 
     outRanks = overallValues.rank(method="min", axis=1, ascending=False)
+    outRanks.index = "outRanks"
 
     # -------------------------------------------------------
     if (numAlt >= 3) and not (alternativesRanks is None):
@@ -941,6 +945,8 @@ def UTASTAR(
         maxWeights.index = performanceTable.columns.values
         minWeights = minWeights.transpose()
         maxWeights = maxWeights.transpose()
+        minWeights.index = "minWeights"
+        maxWeights.index = "maxWeights"
 
         # calculate the average value function, for which each component is the average value obtained for each of the programs above
         averageSolution = pd.DataFrame(combinedSolutions.mean())
@@ -966,7 +972,8 @@ def UTASTAR(
                 }
             )
             averageValueFunctions = pd.concat([averageValueFunctions, tmp], axis=1)
-
+        
+        averageValueFunctions = averageValueFunctions.transpose()
     # TODO re calculate overall values after post optimality 
 
 

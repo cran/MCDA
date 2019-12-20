@@ -1,3 +1,4 @@
+import pandas as pd
 from Python.UTASTAR import UTASTAR
 
 # UTASTAR EXAMPLE
@@ -35,7 +36,18 @@ criteriaNumberOfBreakPoints = pd.DataFrame(
 print("\nCriteriaNumofBP\n", criteriaNumberOfBreakPoints)
 
 
-x = UTASTAR(
+(
+    optimum,
+    valueFunctions,
+    overallValues,
+    outRanks,
+    errorValuesPlus,
+    errorValuesMinus,
+    tau,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+) = UTASTAR(
     performanceTable,
     criteriaMinMax,
     criteriaNumberOfBreakPoints,
@@ -43,9 +55,33 @@ x = UTASTAR(
     alternativesRanks=alternativesRanks,
 )
 
-print(x)
+print(
+    optimum,
+    valueFunctions,
+    overallValues,
+    outRanks,
+    errorValuesPlus,
+    errorValuesMinus,
+    tau,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+    sep="\n",
+)
 
-x1 = UTASTAR(
+print("X ends Here")
+(
+    optimum,
+    valueFunctions,
+    overallValues,
+    outRanks,
+    errorValuesPlus,
+    errorValuesMinus,
+    tau,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+) = UTASTAR(
     performanceTable,
     criteriaMinMax,
     criteriaNumberOfBreakPoints,
@@ -54,8 +90,22 @@ x1 = UTASTAR(
     kPostOptimality=0.5,
 )
 
-print(x1)
-# assert Kendall == 1
+print(
+    optimum,
+    valueFunctions,
+    overallValues,
+    outRanks,
+    errorValuesPlus,
+    errorValuesMinus,
+    tau,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+    sep="\n",
+)
+
+print("X1 ENDS HERE ")
+assert all(tau == 1)
 
 # let us try the same with the pairwise preferences to test if the results
 # are the same
@@ -68,7 +118,18 @@ alternativesIndifferences = pd.DataFrame([["METRO1"], ["METRO2"]])
 alternativesIndifferences = alternativesIndifferences.transpose()
 print(alternativesIndifferences)
 
-x1prime = UTASTAR(
+(
+    optimum,
+    valueFunctions,
+    overallValues,
+    outRanks,
+    errorValuesPlus,
+    errorValuesMinus,
+    tau,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+) = UTASTAR(
     performanceTable,
     criteriaMinMax,
     criteriaNumberOfBreakPoints,
@@ -77,12 +138,36 @@ x1prime = UTASTAR(
     alternativesIndifferences=alternativesIndifferences,
 )
 
-print(x1prime)
+print(
+    optimum,
+    valueFunctions,
+    overallValues,
+    outRanks,
+    errorValuesPlus,
+    errorValuesMinus,
+    tau,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+    sep="\n",
+)
+print("X1 PRIME ENDS HERE")
 # assert(all(x1$valueFunctions$Price == x1prime$valueFunctions$Price) & & all(x1$valueFunctions$Time == x1prime$valueFunctions$Time) & & all(x1$valueFunctions$Comfort == x1prime$valueFunctions$Comfort))
 
 # now some filtering
 
-x2 = UTASTAR(
+(
+    optimum,
+    valueFunctions,
+    overallValues,
+    outRanks,
+    errorValuesPlus,
+    errorValuesMinus,
+    tau,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+) = UTASTAR(
     performanceTable,
     criteriaMinMax,
     criteriaNumberOfBreakPoints,
@@ -92,5 +177,18 @@ x2 = UTASTAR(
     alternativesIDs=["METRO1", "METRO2", "TAXI"],
 )
 
-print(x2)
+print(
+    optimum,
+    valueFunctions,
+    overallValues,
+    outRanks,
+    errorValuesPlus,
+    errorValuesMinus,
+    tau,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+    sep="\n",
+)
+print("X2 ends here")
 # assert(x2$overallValues[1] == x2$overallValues[2])

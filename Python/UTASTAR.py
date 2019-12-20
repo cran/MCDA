@@ -184,7 +184,7 @@ def UTASTAR(
                 ]
                 tmpIds = list(dict.fromkeys(tmpIds))
                 # tmpIds = alternativesPreferences[alternativesPreferences.isin(reallyActiveAlternatives)]
-                
+
                 tmpMatrix = pd.DataFrame()
                 for i in range(alternativesPreferences.shape[0]):
                     if all(alternativesPreferences.iloc[i, :].isin(tmpIds)):
@@ -231,7 +231,7 @@ def UTASTAR(
             raise ValueError("performanceTable contains higher values than criteriaUBs")
 
     if not (criteriaLBs is None):
-        if not all(performanceTable.apply(min, axis=1) >= criteriaLBs): 
+        if not all(performanceTable.apply(min, axis=1) >= criteriaLBs):
             raise ValueError("performanceTable contains lower values than criteriaLBs")
 
     if not all(criteriaNumberOfBreakPoints >= 2):
@@ -267,7 +267,7 @@ def UTASTAR(
     criteriaBreakPoints = list()
 
     for i in range(numCrit):
-        tmp = list()  
+        tmp = list()
         if not (criteriaLBs is None):
             mini = criteriaLBs[i]
         else:
@@ -324,16 +324,15 @@ def UTASTAR(
         columns=range(criteriaNumberOfBreakPoints.values.sum() + 2 * numAlt),
     )
 
-    # TODO write better code replace for loops for index finding 
+    # TODO write better code replace for loops for index finding
     #   replace try catch with if/else
     for n in range(numAlt):
         for m in range(numCrit):
 
-            # print(criteriaBreakPoints.iloc[m, m].index(performanceTable.iloc[n,m]))
             try:
                 # then we have a performance value which is on a breakpoint
                 j = criteriaBreakPoints.iloc[0, m].index(performanceTable.iloc[n, m])
-                # Also works without try catch 
+                # Also works without try catch
                 # j = [x for x in criteriaBreakPoints.iloc[m,m] if performanceTable.iloc[n,m] ==  x]
 
                 if m == 0:
@@ -446,7 +445,7 @@ def UTASTAR(
             ]
             orderedAlternativesRanks = orderedAlternativesRanks.drop(
                 orderedAlternativesRanks.columns[tmpordindexpos], axis="columns"
-            )  
+            )
 
         for i in range(alternativesRanks.shape[1] - 1):
             if (
@@ -571,7 +570,7 @@ def UTASTAR(
     mat = mat.dropna()
     # the direction of the inequality
 
-    # TODO CHECK -1 VALIDITY # Update seems fine recheck later 
+    # TODO CHECK -1 VALIDITY # Update seems fine recheck later
     for i in range(monotonicityConstraints.shape[0] - 1):
         dire.append(">=")
 
@@ -599,7 +598,7 @@ def UTASTAR(
                 + criteriaNumberOfBreakPoints.iloc[0, i]
             )
         tmp.iloc[0, pos - 1] = 1
-        # TODO CHECK -1 VALIDITY # Update seems ok recheck later 
+        # TODO CHECK -1 VALIDITY # Update seems ok recheck later
 
     # add this to the constraints matrix mat
 
@@ -632,7 +631,7 @@ def UTASTAR(
         else:
             pos = criteriaNumberOfBreakPoints.iloc[
                 0, 0:(i)
-            ].sum()  # TODO +1 removal validity # Update seems ok recheck later 
+            ].sum()  # TODO +1 removal validity # Update seems ok recheck later
         tmp.iloc[0, pos] = 1
         minValueFunctionsConstraints = minValueFunctionsConstraints.append(tmp)
 
@@ -652,8 +651,8 @@ def UTASTAR(
 
     # -------------------------------------------------------
 
-    # TODO check if needed 
-    # pandas2ri.activate() 
+    # TODO check if needed
+    # pandas2ri.activate()
 
     # convert to list
     robj = [x for x in obj.iloc[0, :]]
@@ -672,13 +671,11 @@ def UTASTAR(
     rmat = rmat.stack().values
     rmat = robjects.r.matrix(robjects.FloatVector(rmat), nrow=matrows)
 
-    # LP calculation 
+    # LP calculation
     rglpk = importr("Rglpk")
     lpSolution = rglpk.Rglpk_solve_LP(robj, rmat, rdire, rrhs)
 
-    # print(lpSolution)
-
-    # TODO FIX CODE REMOVE UGLY CODE recheck r2py 
+    # TODO FIX CODE REMOVE UGLY CODE recheck r2py
     # lpSolution = base.summary(lpSolution)
     # lpSolution = pandas2ri.ri2py_listvector(lpSolution)
     # lpSolution = robjects.r.matrix(robjects.Vector(lpSolution))
@@ -718,7 +715,7 @@ def UTASTAR(
     # if ( sensitivity_report != 'NA'):
     #     sensitivity_report = sensitivity_report.tolist()
 
-    # NOT USED as lpSolution 
+    # NOT USED as lpSolution
     lpSolution = pd.concat(
         [optimum, solution, status, solution_dual, auxiliary_primal, auxiliary_dual],
         axis=1,
@@ -729,10 +726,8 @@ def UTASTAR(
 
     # create a structure containing the value functions
 
-    valueFunctions = (
-        pd.DataFrame()
-    )  
-    #  TODO check if needed 
+    valueFunctions = pd.DataFrame()
+    #  TODO check if needed
     # (index=['x','y'],columns=  performanceTable.columns.values)
 
     for i in range(criteriaNumberOfBreakPoints.shape[1]):
@@ -766,7 +761,7 @@ def UTASTAR(
     for i in range(1, numCrit + 1):
         for j in range(
             criteriaNumberOfBreakPoints.iloc[0, i - 1] - 1
-        ):  # TODO check -1 Validity # Upd seems ok recheck later 
+        ):  # TODO check -1 Validity # Upd seems ok recheck later
 
             if (
                 valueFunctions.iloc[i * 2 - 1, j]
@@ -778,11 +773,9 @@ def UTASTAR(
 
     # -------------------------------------------------------
 
-    tmp = solution.iloc[0 : criteriaNumberOfBreakPoints.values.sum()]  
+    tmp = solution.iloc[0 : criteriaNumberOfBreakPoints.values.sum()]
     tmp2 = a.iloc[:, 0 : criteriaNumberOfBreakPoints.values.sum()]
-    overallValues = pd.DataFrame(
-        tmp2.dot(tmp)
-    )
+    overallValues = pd.DataFrame(tmp2.dot(tmp))
 
     overallValues = overallValues.transpose()
     overallValues.columns = performanceTable.index.values
@@ -833,7 +826,7 @@ def UTASTAR(
     tau = pd.DataFrame({"Kendall": [tau]})
     # prepare the output
 
-    # Output used to be in a single frame 
+    # Output used to be in a single frame
     # out = pd.DataFrame(
     #     {
     #         "optimum": optimum.round(5),
@@ -846,7 +839,7 @@ def UTASTAR(
     #     }
     # )
 
-    #TODO  WORKS BUT BETTER RETURN Multilpe dataframes
+    # TODO  WORKS BUT BETTER RETURN Multilpe dataframes
     out = pd.concat(
         [
             optimum.round(5),
@@ -972,12 +965,13 @@ def UTASTAR(
                 }
             )
             averageValueFunctions = pd.concat([averageValueFunctions, tmp], axis=1)
-        
+
         averageValueFunctions = averageValueFunctions.transpose()
-    # TODO re calculate overall values after post optimality 
+    # TODO re calculate overall values after post optimality
 
-
-    out = pd.concat([out, minWeights, maxWeights, averageValueFunctions], axis=1, sort= True)
+    out = pd.concat(
+        [out, minWeights, maxWeights, averageValueFunctions], axis=1, sort=True
+    )
 
     return (
         optimum,

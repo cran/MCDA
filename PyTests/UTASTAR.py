@@ -91,7 +91,7 @@ print("X ends Here")
     criteriaNumberOfBreakPoints,
     epsilon,
     alternativesRanks=alternativesRanks,
-    kPostOptimality=0.5,
+    kPostOptimality=0.01,
 )
 
 print(

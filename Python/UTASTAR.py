@@ -293,7 +293,6 @@ def UTASTAR(
             tmpnum = int(mini + (j - 1) / (alphai - 1) * (maxi - mini))
             tmp.append(tmpnum)
 
-
         # due to this formula, the minimum and maximum values might not be exactly
         #  the same than the real minimum and maximum values in the performance table
         # to be sure there is no rounding problem, we recopy these values in tmp
@@ -310,14 +309,14 @@ def UTASTAR(
         if criteriaMinMax.iloc[0, i] == "min":
             tmp.sort(reverse=True)
 
-        #criteriaBreakPoints.append(tmp)
+        # criteriaBreakPoints.append(tmp)
         ltmp = pd.DataFrame(tmp)
-        criteriaBreakPoints = pd.concat([criteriaBreakPoints,ltmp],axis = 1 )
+        criteriaBreakPoints = pd.concat([criteriaBreakPoints, ltmp], axis=1)
 
-    criteriaBreakPoints.columns = performanceTable.columns.values 
-    
-    ##try to use this for columns 
-    numofBPSum = [x-1 for x in criteriaNumberOfBreakPoints.values  ]
+    criteriaBreakPoints.columns = performanceTable.columns.values
+
+    # try to use this for columns
+    numofBPSum = [x - 1 for x in criteriaNumberOfBreakPoints.values]
     numofBPSum = pd.DataFrame(numofBPSum)
     numofBPSum = numofBPSum.values.sum()
     # -------------------------------------------------------
@@ -334,16 +333,22 @@ def UTASTAR(
     #   replace try catch with if/else
     for n in range(numAlt):
         for m in range(numCrit):
-            j = [int(x) for x in range(len(criteriaBreakPoints.iloc[:,m].dropna(axis=0).values)) if performanceTable.iloc[n,m] ==  criteriaBreakPoints.iloc[x,m]]
-            if (len(j)!=0):
+            j = [
+                int(x)
+                for x in range(
+                    len(criteriaBreakPoints.iloc[:, m].dropna(axis=0).values)
+                )
+                if performanceTable.iloc[n, m] == criteriaBreakPoints.iloc[x, m]
+            ]
+            if len(j) != 0:
                 # then we have a performance value which is on a breakpoint
                 j = int(j[0])
-                
+
                 if m == 0:
-                    pos = j 
+                    pos = j
                 else:
-                    pos = criteriaNumberOfBreakPoints.iloc[0, :m].sum() + j  
-                
+                    pos = criteriaNumberOfBreakPoints.iloc[0, :m].sum() + j
+
                 a.iloc[n, pos] = 1
             else:
 
@@ -355,38 +360,39 @@ def UTASTAR(
                 if criteriaMinMax.iloc[0, m] == "min":
                     j = [
                         x
-                        for x in range(len(criteriaBreakPoints.iloc[:, m].dropna(axis=0).values))
+                        for x in range(
+                            len(criteriaBreakPoints.iloc[:, m].dropna(axis=0).values)
+                        )
                         if performanceTable.iloc[n, m] > criteriaBreakPoints.iloc[x, m]
                     ]
                     j = int(j[0])
                 else:
                     j = [
                         x
-                        for x in range(len(criteriaBreakPoints.iloc[:, m].dropna(axis=0).values))
+                        for x in range(
+                            len(criteriaBreakPoints.iloc[:, m].dropna(axis=0).values)
+                        )
                         if performanceTable.iloc[n, m] < criteriaBreakPoints.iloc[x, m]
                     ]
                     j = int(j[0])
 
-
                 if m == 0:
                     pos = j
                 else:
-                    pos = criteriaNumberOfBreakPoints.iloc[0, :m].sum() + j 
-                
-                j = j - 1 
+                    pos = criteriaNumberOfBreakPoints.iloc[0, :m].sum() + j
+
+                j = j - 1
                 pos = pos - 1
 
                 a.iloc[n, pos] = 1 - (
                     performanceTable.iloc[n, m] - criteriaBreakPoints.iloc[j, m]
                 ) / (
-                    criteriaBreakPoints.iloc[j+1, m]
-                    - criteriaBreakPoints.iloc[j, m]
+                    criteriaBreakPoints.iloc[j + 1, m] - criteriaBreakPoints.iloc[j, m]
                 )
                 a.iloc[n, pos + 1] = (
                     performanceTable.iloc[n, m] - criteriaBreakPoints.iloc[j, m]
                 ) / (
-                    criteriaBreakPoints.iloc[j+1, m]
-                    - criteriaBreakPoints.iloc[j, m]
+                    criteriaBreakPoints.iloc[j + 1, m] - criteriaBreakPoints.iloc[j, m]
                 )
 
             # and now for sigmaPlus
@@ -395,7 +401,7 @@ def UTASTAR(
             # and sigmaMinus
             sigmapos = a.shape[1] - numAlt + n
             a.iloc[n, sigmapos] = +1
-    
+
     # -------------------------------------------------------
 
     # the objective function : the first elements correspond to the ui's
@@ -745,7 +751,8 @@ def UTASTAR(
 
         tmp = pd.DataFrame(
             {
-                performanceTable.columns[i] + "X": criteriaBreakPoints.iloc[:, i].dropna(axis=0).values,
+                performanceTable.columns[i]
+                + "X": criteriaBreakPoints.iloc[:, i].dropna(axis=0).values,
                 performanceTable.columns[i] + "Y": ltmp,
             }
         )
@@ -853,7 +860,8 @@ def UTASTAR(
             errorValuesMinus.round(5),
             tau,
         ],
-        axis=1,sort=True
+        axis=1,
+        sort=True,
     )
 
     # -------------------------------------------------------
@@ -899,7 +907,7 @@ def UTASTAR(
 
             obj.iloc[0, pos - 1] = 1
 
-            ##Transformation code for LP
+            # Transformation code for LP
             robj = [x for x in obj.iloc[0, :]]
             robj = robjects.IntVector(robj)
             rdire = robjects.StrVector(dire)
@@ -964,7 +972,8 @@ def UTASTAR(
 
             tmp = pd.DataFrame(
                 {
-                    performanceTable.columns[i] + "X": criteriaBreakPoints.iloc[:, i].dropna(axis=0).values,
+                    performanceTable.columns[i]
+                    + "X": criteriaBreakPoints.iloc[:, i].dropna(axis=0).values,
                     performanceTable.columns[i] + "Y": ltmp,
                 }
             )
@@ -975,6 +984,7 @@ def UTASTAR(
 
         tmp = averageSolution.iloc[:, 0 : criteriaNumberOfBreakPoints.values.sum()]
         tmp = tmp.transpose()
+        
         tmp2 = a.iloc[:, 0 : criteriaNumberOfBreakPoints.values.sum()]
         averageOverallValues = pd.DataFrame(tmp2.dot(tmp))
 
@@ -982,11 +992,12 @@ def UTASTAR(
         averageOverallValues.columns = performanceTable.index.values
         averageOverallValues.index = ["averageOverallValues"]
 
-
-    #ouput no used TODO output as a single variable dataframe ?
+    # ouput no used TODO output as a single variable dataframe ?
 
     out = pd.concat(
-        [out, minWeights, maxWeights, averageValueFunctions,averageOverallValues], axis=1, sort=True
+        [out, minWeights, maxWeights, averageValueFunctions, averageOverallValues],
+        axis=1,
+        sort=True,
     )
 
     return (
@@ -1000,6 +1011,6 @@ def UTASTAR(
         minWeights,
         maxWeights,
         averageValueFunctions,
-        averageOverallValues
+        averageOverallValues,
     )
 

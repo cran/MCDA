@@ -47,6 +47,7 @@ print("\nCriteriaNumofBP\n", criteriaNumberOfBreakPoints)
     minWeights,
     maxWeights,
     averageValueFunctions,
+    averageOverallValues
 ) = UTASTAR(
     performanceTable,
     criteriaMinMax,
@@ -66,10 +67,12 @@ print(
     minWeights,
     maxWeights,
     averageValueFunctions,
+    averageOverallValues,
     sep="\n",
 )
 
 print("X ends Here")
+
 (
     optimum,
     valueFunctions,
@@ -81,6 +84,7 @@ print("X ends Here")
     minWeights,
     maxWeights,
     averageValueFunctions,
+    averageOverallValues
 ) = UTASTAR(
     performanceTable,
     criteriaMinMax,
@@ -101,6 +105,7 @@ print(
     minWeights,
     maxWeights,
     averageValueFunctions,
+    averageOverallValues,
     sep="\n",
 )
 
@@ -129,6 +134,7 @@ print(alternativesIndifferences)
     minWeights,
     maxWeights,
     averageValueFunctions,
+    averageOverallValues
 ) = UTASTAR(
     performanceTable,
     criteriaMinMax,
@@ -149,6 +155,7 @@ print(
     minWeights,
     maxWeights,
     averageValueFunctions,
+    averageOverallValues,
     sep="\n",
 )
 print("X1 PRIME ENDS HERE")
@@ -167,6 +174,7 @@ print("X1 PRIME ENDS HERE")
     minWeights,
     maxWeights,
     averageValueFunctions,
+    averageOverallValues
 ) = UTASTAR(
     performanceTable,
     criteriaMinMax,
@@ -188,6 +196,7 @@ print(
     minWeights,
     maxWeights,
     averageValueFunctions,
+    averageOverallValues,
     sep="\n",
 )
 print("X2 ends here")

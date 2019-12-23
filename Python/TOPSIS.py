@@ -1,6 +1,6 @@
 # TOPSIS TO PYTHON
 import pandas as pd
-
+import math
 
 def TOPSIS(
     performanceTable,
@@ -20,7 +20,7 @@ def TOPSIS(
         raise ValueError("criteria IDs should be in a vector")
     if not ((performanceTable is None) or isinstance(performanceTable, pd.DataFrame)):
         raise ValueError("performanceTable must be a matrix or a data frame")
-    if not (len(criteriaWeights) == performanceTable.shape[1]):
+    if not (criteriaWeights.shape[1] == performanceTable.shape[1]):
         raise ValueError(
             "the number of criteriaWeights must equal the number of columns in the performanceTable"
         )
@@ -45,37 +45,41 @@ def TOPSIS(
 
         criteriaMinMax = criteriaMinMax[criteriaIDs]
 
-    critno = len(criteriaWeights)
-    altno = len(performanceTable)
+    critno = criteriaWeights.shape[1]
+    altno = performanceTable.shape[0]
 
     ## Calculate the weighted normalised matrix
 
-    divby = list(range(1, critno))
-    for i in range(1, critno):
+    divby = list(range(critno))
+    for i in range(critno):
+        tmp = sum(performanceTable.iloc[:,i] **2)
+        divby[i] = math.sqrt(tmp)
 
-        divby[i] < -sqrt(sum(performanceTable[i] ^ 2))
-
-    normalisedm = t(t(performanceTable) / divby)
-    wnm = t(t(normalisedm) * criteriaWeights)
+    divby = pd.DataFrame(divby)
+    normalisedm = pd.DataFrame(performanceTable.transpose().values / divby.values , index= performanceTable.columns, columns= performanceTable.index)
+    normalisedm = normalisedm.transpose()
+    wnm = pd.DataFrame(normalisedm.transpose().values * criteriaWeights.transpose().values , index = performanceTable.columns , columns = performanceTable.index)
+    wnm = wnm.transpose()
 
     ## Identify positive and negative ideal solutions
 
-    pis = list(range(1, critno))
-    nis = list(range(1, critno))
+    pis = list(range(critno))
+    nis = list(range(critno))
 
     if (positiveIdealSolutions is None) or (negativeIdealSolutions is None):
 
-        for i in range(1, critno):
+        for i in range(critno):
 
-            if criteriaMinMax[i] == "max":
+            if criteriaMinMax.iloc[0,i] == "max":
 
-                pis[i] = max(wnm[i])
-                nis[i] = min(wnm[i])
+                pis[i] = max(wnm.iloc[:,i])
+                nis[i] = min(wnm.iloc[:,i])
 
             else:
 
-                pis[i] = min(wnm[i])
-                nis[i] = max(wnm[i])
+                pis[i] = min(wnm.iloc[:,i])
+                nis[i] = max(wnm.iloc[:,i])
+      
     else:
 
         ## check the input data is correct
@@ -92,21 +96,79 @@ def TOPSIS(
         nis = negativeIdealSolutions
 
     ## Identify separation from positive and negative ideal solutions
-    spis = sweep(wnm, 2, pis) ^ 2
-    snis = sweep(wnm, 2, nis) ^ 2
-    spisv = list(range(1, altno))
-    snisv = list(range(1, altno))
+    spis = wnm.subtract(pis) **2
+    snis = wnm.subtract(nis) **2
 
-    for i in range(1, altno):
+    spisv = list(range(altno))
+    snisv = list(range(altno))
 
-        spisv[i] = sqrt(sum(spis[i,]))
-        snisv[i] = sqrt(sum(snis[i,]))
+    for i in range(altno):
 
+        spisv[i] = math.sqrt(spis.iloc[i,:].sum())
+        snisv[i] = math.sqrt(snis.iloc[i,:].sum())
+    
     ## Calculate results
-    results = list(range(1, altno))
-    for i in range(1, altno):
+    results = list(range(altno))
+    for i in range(altno):
 
         results[i] = snisv[i] / (snisv[i] + spisv[i])
-    results.index = performanceTable.columns.vallues
+        
+    results = pd.DataFrame(results)   
+    results.index = performanceTable.index.values
+    results.columns = ["Solution"]
+    results= results.transpose()
     return results
 
+
+
+
+## This test example is the same as http://hodgett.co.uk/topsis-in-excel/
+data = [[5490,51.4,8.5,285],[6500,70.6,7,288],[6489,54.3,7.5,290]]
+performanceTable = pd.DataFrame(data)
+
+performanceTable.index =  ["Corsa","Clio","Fiesta"]
+performanceTable.columns = ["Purchase Price","Economy","Aesthetics","Boot Capacity"]
+
+print(performanceTable)
+
+weights = [0.35,0.25,0.25,0.15]
+weights = pd.DataFrame(weights)
+
+
+criteriaMinMax = ["min", "max", "max", "max"]
+criteriaMinMax= pd.DataFrame(criteriaMinMax)
+positiveIdealSolutions = [0.179573776, 0.171636015, 0.159499658, 0.087302767]
+negativeIdealSolutions = [0.212610118, 0.124958799, 0.131352659, 0.085797547]
+
+positiveIdealSolutions = pd.DataFrame(positiveIdealSolutions)
+negativeIdealSolutions = pd.DataFrame(negativeIdealSolutions)
+
+weights.index = performanceTable.columns
+weights.columns = ["Weights"]
+criteriaMinMax.index = performanceTable.columns
+criteriaMinMax.columns = ["CriteriaMinMax"]
+positiveIdealSolutions.index = performanceTable.columns
+positiveIdealSolutions.columns = ["PositiveIdealSolutions"]
+negativeIdealSolutions.index = performanceTable.columns
+negativeIdealSolutions.columns = ["NegativeIdealSolutions"]
+
+weights = weights.transpose()
+criteriaMinMax = criteriaMinMax.transpose()
+positiveIdealSolutions = positiveIdealSolutions.transpose()
+negativeIdealSolutions = negativeIdealSolutions.transpose()
+
+print(weights)
+print(criteriaMinMax)
+print(positiveIdealSolutions)
+print(negativeIdealSolutions)
+
+overall1 = TOPSIS(performanceTable, weights, criteriaMinMax)
+
+print(overall1)
+
+overall2 = TOPSIS(performanceTable, weights, criteriaMinMax, positiveIdealSolutions, negativeIdealSolutions)
+print(overall2)
+overall3 = TOPSIS(performanceTable, weights, criteriaMinMax, alternativesIDs = ["Corsa","Clio"], criteriaIDs = ["Purchase Price","Economy","Aesthetics"])
+print(overall3)
+overall4 = TOPSIS(performanceTable, weights, criteriaMinMax, positiveIdealSolutions, negativeIdealSolutions, alternativesIDs = ["Corsa","Clio"], criteriaIDs =["Purchase Price","Economy","Aesthetics"])
+print(overall4)

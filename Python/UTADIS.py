@@ -75,14 +75,15 @@ def UTADIS(
 
     if not (categoriesIDs is None):
         tmp = set(categoriesIDs).intersection(alternativesAssignments.values.flatten())
-        
-        alternativesAssignments = alternativesAssignments[alternativesAssignments.isin(tmp)]
+
+        alternativesAssignments = alternativesAssignments[
+            alternativesAssignments.isin(tmp)
+        ]
         categoriesRanks = categoriesRanks[categoriesIDs]
 
         performanceTable = performanceTable.loc[
             alternativesAssignments.columns.values,
         ]
-
 
     # data is filtered, check for some data consistency
 
@@ -712,22 +713,22 @@ def UTADIS(
     categoriesLBs.index = tmpindex[: numCat - 1]
     categoriesLBs = categoriesLBs.transpose()
 
-    #
-    #   # -------------------------------------------------------
-    #
-    #   # the ranks of the alternatives
-    #
-    #   outRanks <- rank(-overallValues, ties.method="min")
-    #
-    #   # -------------------------------------------------------
-    #
-    #   if ((numAlt >= 3) && !is.null(alternativesRanks))
-    #     tau = Kendall(alternativesRanks,outRanks)$tau[1]
-    #   else
-    #     tau = NULL
-    #
-    #   # prepare the output
-    #
+    # -------------------------------------------------------
+
+    # the ranks of the alternatives
+
+    # outRanks = overallValues.rank(method="min", axis=1, ascending=False)
+    # outRanks.index = ["outRanks"]
+
+    # # -------------------------------------------------------
+    # if (numAlt >= 3) and not (alternativesRanks is None):
+    #     tau = alternativesRanks.iloc[0, :].corr(outRanks.iloc[0, :], method="kendall")
+    # else:
+    #     tau = None
+
+    # tau = pd.DataFrame({"Kendall": [tau]})
+    # tau.index = ["tau"]
+    # # prepare the output
 
     out = pd.concat(
         [
@@ -742,84 +743,134 @@ def UTADIS(
         sort=True,
     )
 
-    #
-    #
-    #   # -------------------------------------------------------
-    #
-    #   # post-optimality analysis if the optimum is found and if kPostOptimality is not NULL, i.e. the solution space is not empty
-    #
-    #   minWeights <- NULL
-    #   maxWeights <- NULL
-    #   averageValueFunctions <- NULL
-    #
-    #
-    #   if (!is.null(kPostOptimality) && (lpSolution$optimum == 0)){
-    #
-    #     # add F \leq F* + k(F*) to the constraints, where F* is the optimum and k(F*) is a positive threshold, which is a small proportion of F*
-    #
-    #     mat <- rbind(mat,obj)
-    #     dir <- c(dir,"<=")
-    #     rhs <- c(rhs,kPostOptimality)
-    #
-    #     minWeights <- c()
-    #     maxWeights <- c()
-    #     combinedSolutions <- c()
-    #
-    #     for (i in 1:numCrit){
-    #
-    #       # first maximize the best ui for each criterion, then minimize it
-    #       # this gives the interval of variation for each weight
-    #       # the objective function : the first elements correspond to the ui's, the last one to the sigmas
-    #
-    #       obj<-rep(0,sum(criteriaNumberOfBreakPoints))
-    #       obj<-c(obj,rep(0,2*numAlt))
-    #
-    #       if (i==1)
-    #         pos <- criteriaNumberOfBreakPoints[i]
-    #       else
-    #         pos<-sum(criteriaNumberOfBreakPoints[1:(i-1)])+criteriaNumberOfBreakPoints[i]
-    #
-    #       obj[pos] <- 1
-    #
-    #       lpSolutionMin <- Rglpk_solve_LP(obj, mat, dir, rhs)
-    #       lpSolutionMax <- Rglpk_solve_LP(obj, mat, dir, rhs, max=TRUE)
-    #
-    #       minWeights <- c(minWeights,lpSolutionMin$optimum)
-    #       maxWeights <- c(maxWeights,lpSolutionMax$optimum)
-    #       combinedSolutions <- rbind(combinedSolutions,lpSolutionMin$solution)
-    #       combinedSolutions <- rbind(combinedSolutions,lpSolutionMax$solution)
-    #     }
-    #
-    #     names(minWeights) <- colnames(performanceTable)
-    #     names(maxWeights) <- colnames(performanceTable)
-    #
-    #     # calculate the average value function, for which each component is the average value obtained for each of the programs above
-    #     averageSolution <- apply(combinedSolutions,2,mean)
-    #
-    #     # create a structure containing the average value functions
-    #
-    #     averageValueFunctions <- list()
-    #
-    #     for (i in 1:length(criteriaNumberOfBreakPoints)){
-    #       tmp <- c()
-    #       if (i==1)
-    #         pos <- 0
-    #       else
-    #         pos<-sum(criteriaNumberOfBreakPoints[1:(i-1)])
-    #       for (j in 1:criteriaNumberOfBreakPoints[i]){
-    #         tmp <- c(tmp,averageSolution[pos+j])
-    #       }
-    #       tmp<-rbind(criteriaBreakPoints[[i]],tmp)
-    #       colnames(tmp)<- NULL
-    #       rownames(tmp) <- c("x","y")
-    #       averageValueFunctions <- c(averageValueFunctions,list(tmp))
-    #     }
-    #
-    #     names(averageValueFunctions) <- colnames(performanceTable)
-    #
-    #   }
-    #
-    #   out <- c(out, list(minimumWeightsPO = minWeights, maximumWeightsPO = maxWeights, averageValueFunctionsPO = averageValueFunctions))
+    # -------------------------------------------------------
+
+    # post-optimality analysis if the optimum is found and if kPostOptimality is not NULL, i.e. the solution space is not empty
+
+    minWeights = None
+    maxWeights = None
+    averageValueFunctions = None
+    averageOverallValues = None
+
+    if not (kPostOptimality is None) and (optimum.iloc[0, 0] == 0):
+        # add F \leq F* + k(F*) to the constraints, where F* is the optimum and k(F*) is a positive threshold, which is a small proportion of F*
+        mat = mat.append(obj.transpose(), ignore_index=True)
+        dire.append("<=")
+        rhs.append(kPostOptimality)
+
+        minWeights = pd.DataFrame()
+        maxWeights = pd.DataFrame()
+        combinedSolutions = pd.DataFrame()
+
+        for i in range(numCrit):
+            # first maximize the best ui for each criterion, then minimize it
+            # this gives the interval of variation for each weight
+            # the objective function : the first elements correspond to the ui's, the last one to the sigmas
+
+            obj1 = pd.DataFrame(
+                0, index=range(1), columns=range(criteriaNumberOfBreakPoints.values.sum())
+                )
+            obj2 = pd.DataFrame(1, index=range(1), columns=range(2 * numAlt))
+
+            obj3 = pd.DataFrame(0, index=range(1), columns=range(numCat - 1))
+
+            obj = pd.concat([obj1, obj2, obj3], axis=1, ignore_index=True)
+
+            if i == 0:
+                pos = criteriaNumberOfBreakPoints.iloc[0, i]
+            else:
+                pos = (
+                    criteriaNumberOfBreakPoints.iloc[0, 0:i].sum()
+                    + criteriaNumberOfBreakPoints.iloc[0, i]
+                )
+
+            obj.iloc[0, pos - 1] = 1
+
+          
+            # Transformation code for LP
+            robj = [x for x in obj.iloc[0, :]]
+            robj = robjects.IntVector(robj)
+            rdire = robjects.StrVector(dire)
+            rrhs = robjects.FloatVector(rhs)
+
+            matrows = len(mat)
+            rmat = mat.transpose()
+            rmat = rmat.stack().values
+            rmat = robjects.r.matrix(robjects.FloatVector(rmat), nrow=matrows)
+
+            # LP
+            lpSolutionMin = rglpk.Rglpk_solve_LP(robj, rmat, rdire, rrhs)
+            lpSolutionMax = rglpk.Rglpk_solve_LP(robj, rmat, rdire, rrhs, max=True)
+
+            # Back to known types pandas dataframes
+            optimumMin = lpSolutionMin.rx2("optimum")
+            optimumMin = pandas2ri.ri2py_vector(optimumMin).tolist()
+            optimumMin = pd.DataFrame({"Optimum": optimumMin}, dtype="float")
+
+            optimumMax = lpSolutionMax.rx2("optimum")
+            optimumMax = pandas2ri.ri2py_vector(optimumMax).tolist()
+            optimumMax = pd.DataFrame({"Optimum": optimumMax}, dtype="float")
+
+            solutionMin = lpSolutionMin.rx2("solution")
+            solutionMin = pandas2ri.ri2py_vector(solutionMin).tolist()
+            solutionMin = pd.DataFrame({"Solution": solutionMin})
+            solutionMin = solutionMin.transpose()
+
+            solutionMax = lpSolutionMax.rx2("solution")
+            solutionMax = pandas2ri.ri2py_vector(solutionMax).tolist()
+            solutionMax = pd.DataFrame({"Solution": solutionMax})
+            solutionMax = solutionMax.transpose()
+
+            minWeights = minWeights.append(optimumMin, ignore_index=True)
+            maxWeights = maxWeights.append(optimumMax, ignore_index=True)
+            combinedSolutions = combinedSolutions.append(solutionMin, ignore_index=True)
+            combinedSolutions = combinedSolutions.append(solutionMax, ignore_index=True)
+
+        minWeights.index = performanceTable.columns.values
+        maxWeights.index = performanceTable.columns.values
+        minWeights = minWeights.transpose()
+        maxWeights = maxWeights.transpose()
+        minWeights.index = ["minWeights"]
+        maxWeights.index = ["maxWeights"]
+
+        # calculate the average value function, for which each component is the average value obtained for each of the programs above
+        averageSolution = pd.DataFrame(combinedSolutions.mean())
+        averageSolution = averageSolution.transpose()
+
+        # create a structure containing the average value functions
+
+        averageValueFunctions = pd.DataFrame()
+
+        for i in range(criteriaNumberOfBreakPoints.shape[1]):
+            ltmp = list()
+            if i == 0:
+                pos = 0
+            else:
+                pos = criteriaNumberOfBreakPoints.iloc[0, 0:i].sum()
+            for j in range(criteriaNumberOfBreakPoints.iloc[0, i]):
+                ltmp.append(averageSolution.iloc[0, pos + j])
+
+            tmp = pd.DataFrame(
+                {
+                    performanceTable.columns[i]
+                    + "X": criteriaBreakPoints.iloc[:, i].dropna(axis=0).values,
+                    performanceTable.columns[i] + "Y": ltmp,
+                }
+            )
+            averageValueFunctions = pd.concat([averageValueFunctions, tmp], axis=1)
+
+        averageValueFunctions = averageValueFunctions.transpose()
+        # TODO re calculate overall values after post optimality
+
+        tmp = averageSolution.iloc[:, 0 : criteriaNumberOfBreakPoints.values.sum()]
+        tmp = tmp.transpose()
+
+        tmp2 = a.iloc[:, 0 : criteriaNumberOfBreakPoints.values.sum()]
+        averageOverallValues = pd.DataFrame(tmp2.dot(tmp))
+
+        averageOverallValues = averageOverallValues.transpose()
+        averageOverallValues.columns = performanceTable.index.values
+        averageOverallValues.index = ["averageOverallValues"]
 
     return (
         optimum,
@@ -828,84 +879,11 @@ def UTADIS(
         categoriesLBs,
         errorValuesPlus,
         errorValuesMinus,
-        # minWeights,
-        # maxWeights,
-        # averageValueFunctions,
-        # averageOverallValues,
+        minWeights,
+        maxWeights,
+        averageValueFunctions,
+        averageOverallValues,
     )
 
 
-# UTADIS EXAMPLE
-# the separation threshold
-
-epsilon = 0.05
-
-# the performance table
-data = ([3, 10, 1], [4, 20, 2], [2, 20, 0], [6, 40, 0], [30, 30, 3])
-performanceTable = pd.DataFrame(
-    data,
-    columns=["Price", "Time", "Comfort"],
-    index=["RER", "METRO1", "METRO2", "BUS", "TAXI"],
-)
-
-print("\nPerformance Table \n", performanceTable)
-# ranks of the alternatives
-data = ["good", "medium", "medium", "bad", "bad"]
-rownames = performanceTable.index.values
-alternativesAssignments = pd.DataFrame([data], columns=rownames)
-print("\nAlternative Assignments\n", alternativesAssignments)
-
-# criteria to minimize or maximize
-data = ["min", "min", "max"]
-columnnames = performanceTable.columns.values
-criteriaMinMax = pd.DataFrame([data], columns=columnnames)
-print(
-    "\nCriteria Min Max \n", criteriaMinMax,
-)
-# number of break points for each criterion
-
-criteriaNumberOfBreakPoints = pd.DataFrame(
-    [[3, 4, 4]], columns=performanceTable.columns.values
-)
-print("\nCriteriaNumofBP\n", criteriaNumberOfBreakPoints)
-
-
-categoriesRanks = pd.DataFrame([[1, 2, 3]], columns=["good", "medium", "bad"])
-# ranks of the categories
-print("\nCategoriesRanks", categoriesRanks, sep="\n")
-
-(
-    optimum,
-    valueFunctions,
-    overallValues,
-    categoriesLBs,
-    errorValuesPlus,
-    errorValuesMinus,
-    # minWeights,
-    # maxWeights,
-    # averageValueFunctions,
-    # averageOverallValues,
-) = UTADIS(
-    performanceTable,
-    criteriaMinMax,
-    criteriaNumberOfBreakPoints,
-    alternativesAssignments,
-    categoriesRanks,
-    0.1,
-)
-
-print("X=")
-print(
-    optimum,
-    valueFunctions,
-    overallValues,
-    categoriesLBs,
-    errorValuesPlus,
-    errorValuesMinus,
-    # minWeights,
-    # maxWeights,
-    # averageValueFunctions,
-    # averageOverallValues,
-    sep="\n",
-)
 

@@ -47,10 +47,10 @@ print("\nCategoriesRanks", categoriesRanks, sep="\n")
     categoriesLBs,
     errorValuesPlus,
     errorValuesMinus,
-    # minWeights,
-    # maxWeights,
-    # averageValueFunctions,
-    # averageOverallValues,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+    averageOverallValues,
 ) = UTADIS(
     performanceTable,
     criteriaMinMax,
@@ -68,12 +68,52 @@ print(
     categoriesLBs,
     errorValuesPlus,
     errorValuesMinus,
-    # minWeights,
-    # maxWeights,
-    # averageValueFunctions,
-    # averageOverallValues,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+    averageOverallValues,
     sep="\n",
 )
+
+#k-post Optimality 
+
+
+(
+    optimum,
+    valueFunctions,
+    overallValues,
+    categoriesLBs,
+    errorValuesPlus,
+    errorValuesMinus,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+    averageOverallValues,
+) = UTADIS(
+    performanceTable,
+    criteriaMinMax,
+    criteriaNumberOfBreakPoints,
+    alternativesAssignments,
+    categoriesRanks,
+    0.1,
+    kPostOptimality = 0.01
+)
+
+print("Post optimal X =")
+print(
+    optimum,
+    valueFunctions,
+    overallValues,
+    categoriesLBs,
+    errorValuesPlus,
+    errorValuesMinus,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+    averageOverallValues,
+    sep="\n",
+)
+
 
 # filtering out category "good" and assigment examples "RER" and "TAXI"
 
@@ -84,10 +124,10 @@ print(
     categoriesLBs,
     errorValuesPlus,
     errorValuesMinus,
-    # minWeights,
-    # maxWeights,
-    # averageValueFunctions,
-    # averageOverallValues,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+    averageOverallValues,
 ) = UTADIS(
     performanceTable,
     criteriaMinMax,
@@ -107,10 +147,10 @@ print(
     categoriesLBs,
     errorValuesPlus,
     errorValuesMinus,
-    # minWeights,
-    # maxWeights,
-    # averageValueFunctions,
-    # averageOverallValues,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+    averageOverallValues,
     sep="\n",
 )
 
@@ -121,10 +161,10 @@ print(
     categoriesLBs,
     errorValuesPlus,
     errorValuesMinus,
-    # minWeights,
-    # maxWeights,
-    # averageValueFunctions,
-    # averageOverallValues,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+    averageOverallValues,
 ) = UTADIS(
     performanceTable,
     criteriaMinMax,
@@ -144,9 +184,9 @@ print(
     categoriesLBs,
     errorValuesPlus,
     errorValuesMinus,
-    # minWeights,
-    # maxWeights,
-    # averageValueFunctions,
-    # averageOverallValues,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+    averageOverallValues,
     sep="\n",
 )

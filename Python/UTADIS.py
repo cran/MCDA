@@ -74,17 +74,15 @@ def UTADIS(
     ## which have no assignments anymore
 
     if not (categoriesIDs is None):
-        tmp = [x for x in alternativesAssignments.values if x in categoriesIDs.values]
-
-        tmp2 = list()
-        for i in range(len(tmp)):
-            tmp2.append(any(tmp.iloc[:, i]))
-
-        alternativesAssignments = alternativesAssignments[tmp]
+        tmp = set(categoriesIDs).intersection(alternativesAssignments.values.flatten())
+        
+        alternativesAssignments = alternativesAssignments[alternativesAssignments.isin(tmp)]
         categoriesRanks = categoriesRanks[categoriesIDs]
+
         performanceTable = performanceTable.loc[
             alternativesAssignments.columns.values,
         ]
+
 
     # data is filtered, check for some data consistency
 
@@ -143,7 +141,9 @@ def UTADIS(
 
     # define how many categories we have and how they are named (after all the filtering processes)
 
-    categoriesIDs = alternativesAssignments.transpose().drop_duplicates().values.flatten()
+    categoriesIDs = (
+        alternativesAssignments.transpose().drop_duplicates().values.flatten()
+    )
 
     numCat = len(categoriesIDs)
 
@@ -203,8 +203,6 @@ def UTADIS(
 
     criteriaBreakPoints.columns = performanceTable.columns.values
 
-
- 
     # -------------------------------------------------------
     # a is a matrix decomposing the alternatives in the break point space and
     #  adding the sigmaPlus and sigmaMinus columns
@@ -297,17 +295,16 @@ def UTADIS(
     )
     obj2 = pd.DataFrame(1, index=range(1), columns=range(2 * numAlt))
 
-    obj3 = pd.DataFrame(0, index=range(1),columns= range(numCat-1))
+    obj3 = pd.DataFrame(0, index=range(1), columns=range(numCat - 1))
 
-    obj = pd.concat([obj1, obj2,obj3], axis=1, ignore_index = True)
-    #obj = obj.reset_index(drop=True,)
-
+    obj = pd.concat([obj1, obj2, obj3], axis=1, ignore_index=True)
+    # obj = obj.reset_index(drop=True,)
 
     # -------------------------------------------------------
     assignmentConstraintsLBs = pd.DataFrame(
         index=range(1),
         columns=range(
-            criteriaNumberOfBreakPoints.values.sum() + 2 * numAlt + numCat -1
+            criteriaNumberOfBreakPoints.values.sum() + 2 * numAlt + numCat - 1
         ),
     )
     assignmentConstraintsUBs = pd.DataFrame(
@@ -317,8 +314,6 @@ def UTADIS(
         ),
     )
 
-
-
     # for each assignment example, write its constraint
 
     # categoriesRanks might contain ranks which are higher than 1,2,3, ... (for example if some categories have been filtered out)
@@ -327,51 +322,74 @@ def UTADIS(
 
     newCategoriesRanks = categoriesRanks.rank(axis=1, ascending=True)
 
-
-  
-
     for i in range(alternativesAssignments.shape[1]):
         # determine which lower bound should be activated for the comparison
         # none if it is an assignment in the lowest category
-        #TODO CHECK INDEXES -2 AND -1 maybe the way i get the index is wrong 
-        if newCategoriesRanks.loc[:,alternativesAssignments.iloc[:,i]].values.flatten() != newCategoriesRanks.values.max():
-            tmp = pd.DataFrame(0,index=range(1), columns = range( numCat -1 ))
-            tmpindex = int(newCategoriesRanks.loc[:,alternativesAssignments.iloc[:,i]].values.flatten())
-            tmp.loc[:,tmpindex-1] = -1
-           
+        # TODO CHECK INDEXES -2 AND -1 maybe the way i get the index is wrong
+        if (
+            newCategoriesRanks.loc[
+                :, alternativesAssignments.iloc[:, i]
+            ].values.flatten()
+            != newCategoriesRanks.values.max()
+        ):
+            tmp = pd.DataFrame(0, index=range(1), columns=range(numCat - 1))
+            tmpindex = int(
+                newCategoriesRanks.loc[
+                    :, alternativesAssignments.iloc[:, i]
+                ].values.flatten()
+            )
+            tmp.loc[:, tmpindex - 1] = -1
 
             pfindexvalues = pd.DataFrame(performanceTable.index.values)
             altassColumnValues = pd.DataFrame(alternativesAssignments.columns.values)
-            ltmpindex = [x for x in range(performanceTable.shape[0]) if pfindexvalues.iloc[x,0] == altassColumnValues.iloc[i,0] ]
-            ltmp = a.iloc[ltmpindex,:]
-            ltmp = ltmp.reset_index(drop = True)
-            tmp2 = pd.concat([ltmp,tmp], axis= 1 , ignore_index=True )
+            ltmpindex = [
+                x
+                for x in range(performanceTable.shape[0])
+                if pfindexvalues.iloc[x, 0] == altassColumnValues.iloc[i, 0]
+            ]
+            ltmp = a.iloc[ltmpindex, :]
+            ltmp = ltmp.reset_index(drop=True)
+            tmp2 = pd.concat([ltmp, tmp], axis=1, ignore_index=True)
 
-            assignmentConstraintsLBs = assignmentConstraintsLBs.append(tmp2, ignore_index=True)
+            assignmentConstraintsLBs = assignmentConstraintsLBs.append(
+                tmp2, ignore_index=True
+            )
 
-        if newCategoriesRanks.loc[:,alternativesAssignments.iloc[:,i]].values.flatten() != newCategoriesRanks.values.min():
-            tmp = pd.DataFrame(0,index=range(1), columns = range( numCat -1 ))            
-            tmpindex = int(newCategoriesRanks.loc[:,alternativesAssignments.iloc[:,i]].values.flatten())
-            tmp.loc[:,tmpindex -2] = -1
-    
+        if (
+            newCategoriesRanks.loc[
+                :, alternativesAssignments.iloc[:, i]
+            ].values.flatten()
+            != newCategoriesRanks.values.min()
+        ):
+            tmp = pd.DataFrame(0, index=range(1), columns=range(numCat - 1))
+            tmpindex = int(
+                newCategoriesRanks.loc[
+                    :, alternativesAssignments.iloc[:, i]
+                ].values.flatten()
+            )
+            tmp.loc[:, tmpindex - 2] = -1
+
             pfindexvalues = pd.DataFrame(performanceTable.index.values)
             altassColumnValues = pd.DataFrame(alternativesAssignments.columns.values)
 
-            ltmpindex = [x for x in range(performanceTable.shape[0]) if pfindexvalues.iloc[x,0] == altassColumnValues.iloc[i,0] ]
-            ltmp = a.iloc[ltmpindex,:]
-            ltmp = ltmp.reset_index(drop = True)
-            tmp2 = pd.concat([ltmp,tmp], axis= 1, ignore_index=True)
+            ltmpindex = [
+                x
+                for x in range(performanceTable.shape[0])
+                if pfindexvalues.iloc[x, 0] == altassColumnValues.iloc[i, 0]
+            ]
+            ltmp = a.iloc[ltmpindex, :]
+            ltmp = ltmp.reset_index(drop=True)
+            tmp2 = pd.concat([ltmp, tmp], axis=1, ignore_index=True)
 
-            assignmentConstraintsUBs = assignmentConstraintsUBs.append(tmp2, ignore_index=True)
-
+            assignmentConstraintsUBs = assignmentConstraintsUBs.append(
+                tmp2, ignore_index=True
+            )
 
     assignmentConstraintsLBs = assignmentConstraintsLBs.dropna()
     assignmentConstraintsUBs = assignmentConstraintsUBs.dropna()
-   
 
     # add this to the constraints matrix mat
     mat = assignmentConstraintsLBs.append(assignmentConstraintsUBs, ignore_index=True)
-
 
     # right hand side of this part of mat
 
@@ -396,7 +414,6 @@ def UTADIS(
         for i in range(assignmentConstraintsUBs.shape[0]):
             dire.append("<=")
 
-    
     # -------------------------------------------------------
 
     # now the monotonicity constraints on the value functions
@@ -438,12 +455,12 @@ def UTADIS(
 
     # the direction of the inequality
 
-    for i in range(monotonicityConstraints.shape[0] ):
+    for i in range(monotonicityConstraints.shape[0]):
         dire.append(">=")
 
     # the right hand side of this part of mat
 
-    for i in range(monotonicityConstraints.shape[0] ):
+    for i in range(monotonicityConstraints.shape[0]):
         rhs.append(0)
 
     # -------------------------------------------------------
@@ -481,7 +498,6 @@ def UTADIS(
 
     rhs.append(1)
 
-
     # -------------------------------------------------------
 
     # now the normalizaiton constraints for the lower values of the value functions (= 0)
@@ -514,7 +530,6 @@ def UTADIS(
 
     mat = mat.append(minValueFunctionsConstraints, ignore_index=True)
 
-
     # the direction of the inequality
     for i in range(minValueFunctionsConstraints.shape[0]):
         dire.append("==")
@@ -525,7 +540,6 @@ def UTADIS(
         rhs.append(0)
 
     # -------------------------------------------------------
-
 
     # TODO check if needed
     # pandas2ri.activate()
@@ -550,7 +564,6 @@ def UTADIS(
     # LP calculation
     rglpk = importr("Rglpk")
     lpSolution = rglpk.Rglpk_solve_LP(robj, rmat, rdire, rrhs)
-
 
     # TODO FIX CODE REMOVE UGLY CODE recheck r2py
     # lpSolution = base.summary(lpSolution)
@@ -630,7 +643,6 @@ def UTADIS(
 
     valueFunctions = valueFunctions.transpose()
 
-
     # it might happen on certain computers that these value functions
     # do NOT respect the monotonicity constraints (especially because of too small differences and computer arithmetics)
     # therefore we check if they do, and if not, we "correct" them
@@ -657,7 +669,6 @@ def UTADIS(
     overallValues = overallValues.transpose()
     overallValues.columns = performanceTable.index.values
     overallValues.index = ["overallValues"]
-
 
     # -------------------------------------------------------
 
@@ -691,19 +702,15 @@ def UTADIS(
     # the categories' lower bounds
     categoriesLBs = pd.DataFrame(
         solution.iloc[
-                      
-            (criteriaNumberOfBreakPoints.values.sum() + 2 * numAlt ) : (
+            (criteriaNumberOfBreakPoints.values.sum() + 2 * numAlt) : (
                 criteriaNumberOfBreakPoints.values.sum() + 2 * numAlt + numCat - 1
-  
             )
         ]
     )
 
-
     tmpindex = newCategoriesRanks.columns.values
-    categoriesLBs.index = tmpindex[: numCat -1]
+    categoriesLBs.index = tmpindex[: numCat - 1]
     categoriesLBs = categoriesLBs.transpose()
-
 
     #
     #   # -------------------------------------------------------
@@ -821,10 +828,10 @@ def UTADIS(
         categoriesLBs,
         errorValuesPlus,
         errorValuesMinus,
-        #minWeights,
-        #maxWeights,
-        #averageValueFunctions,
-        #averageOverallValues,
+        # minWeights,
+        # maxWeights,
+        # averageValueFunctions,
+        # averageOverallValues,
     )
 
 
@@ -868,17 +875,17 @@ categoriesRanks = pd.DataFrame([[1, 2, 3]], columns=["good", "medium", "bad"])
 print("\nCategoriesRanks", categoriesRanks, sep="\n")
 
 (
-        optimum,
-        valueFunctions,
-        overallValues,
-        categoriesLBs,
-        errorValuesPlus,
-        errorValuesMinus,
-        #minWeights,
-        #maxWeights,
-        #averageValueFunctions,
-        #averageOverallValues,
-    ) = UTADIS(
+    optimum,
+    valueFunctions,
+    overallValues,
+    categoriesLBs,
+    errorValuesPlus,
+    errorValuesMinus,
+    # minWeights,
+    # maxWeights,
+    # averageValueFunctions,
+    # averageOverallValues,
+) = UTADIS(
     performanceTable,
     criteriaMinMax,
     criteriaNumberOfBreakPoints,
@@ -887,16 +894,18 @@ print("\nCategoriesRanks", categoriesRanks, sep="\n")
     0.1,
 )
 
+print("X=")
 print(
-        optimum,
-        valueFunctions,
-        overallValues,
-        categoriesLBs,
-        errorValuesPlus,
-        errorValuesMinus,
-        #minWeights,
-        #maxWeights,
-        #averageValueFunctions,
-        #averageOverallValues,
-        sep='\n'
-    )
+    optimum,
+    valueFunctions,
+    overallValues,
+    categoriesLBs,
+    errorValuesPlus,
+    errorValuesMinus,
+    # minWeights,
+    # maxWeights,
+    # averageValueFunctions,
+    # averageOverallValues,
+    sep="\n",
+)
+

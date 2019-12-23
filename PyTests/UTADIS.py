@@ -41,17 +41,17 @@ categoriesRanks = pd.DataFrame([[1, 2, 3]], columns=["good", "medium", "bad"])
 print("\nCategoriesRanks", categoriesRanks, sep="\n")
 
 (
-        optimum,
-        valueFunctions,
-        overallValues,
-        categoriesLBs,
-        errorValuesPlus,
-        errorValuesMinus,
-        #minWeights,
-        #maxWeights,
-        #averageValueFunctions,
-        #averageOverallValues,
-    ) = UTADIS(
+    optimum,
+    valueFunctions,
+    overallValues,
+    categoriesLBs,
+    errorValuesPlus,
+    errorValuesMinus,
+    # minWeights,
+    # maxWeights,
+    # averageValueFunctions,
+    # averageOverallValues,
+) = UTADIS(
     performanceTable,
     criteriaMinMax,
     criteriaNumberOfBreakPoints,
@@ -60,27 +60,93 @@ print("\nCategoriesRanks", categoriesRanks, sep="\n")
     0.1,
 )
 
+print("X=")
 print(
-        optimum,
-        valueFunctions,
-        overallValues,
-        categoriesLBs,
-        errorValuesPlus,
-        errorValuesMinus,
-        #minWeights,
-        #maxWeights,
-        #averageValueFunctions,
-        #averageOverallValues,
-        sep='\n'
+    optimum,
+    valueFunctions,
+    overallValues,
+    categoriesLBs,
+    errorValuesPlus,
+    errorValuesMinus,
+    # minWeights,
+    # maxWeights,
+    # averageValueFunctions,
+    # averageOverallValues,
+    sep="\n",
+)
 
-    )
 # filtering out category "good" and assigment examples "RER" and "TAXI"
 
-# y<-UTADIS(performanceTable, criteriaMinMax, criteriaNumberOfBreakPoints, alternativesAssignments, categoriesRanks,0.1, categoriesIDs=c("medium","bad"), alternativesIDs=c("METRO1","METRO2","BUS"))
+(
+    optimum,
+    valueFunctions,
+    overallValues,
+    categoriesLBs,
+    errorValuesPlus,
+    errorValuesMinus,
+    # minWeights,
+    # maxWeights,
+    # averageValueFunctions,
+    # averageOverallValues,
+) = UTADIS(
+    performanceTable,
+    criteriaMinMax,
+    criteriaNumberOfBreakPoints,
+    alternativesAssignments,
+    categoriesRanks,
+    0.1,
+    categoriesIDs=["medium", "bad"],
+    alternativesIDs=["METRO1", "METRO2", "BUS"],
+)
 
-# # working furthermore on only 2 criteria : "Comfort" and "Time"
+print("Y=")
+print(
+    optimum,
+    valueFunctions,
+    overallValues,
+    categoriesLBs,
+    errorValuesPlus,
+    errorValuesMinus,
+    # minWeights,
+    # maxWeights,
+    # averageValueFunctions,
+    # averageOverallValues,
+    sep="\n",
+)
 
-# z<-UTADIS(performanceTable, criteriaMinMax, criteriaNumberOfBreakPoints, alternativesAssignments, categoriesRanks,0.1, criteriaIDs=c("Comfort","Time"))
-
+(
+    optimum,
+    valueFunctions,
+    overallValues,
+    categoriesLBs,
+    errorValuesPlus,
+    errorValuesMinus,
+    # minWeights,
+    # maxWeights,
+    # averageValueFunctions,
+    # averageOverallValues,
+) = UTADIS(
+    performanceTable,
+    criteriaMinMax,
+    criteriaNumberOfBreakPoints,
+    alternativesAssignments,
+    categoriesRanks,
+    0.1,
+    criteriaIDs=["Comfort", "Time"],
+)
+print("Z=")
 # stopifnot(x$optimum ==0 && y$optimum ==0 && z$optimum ==0)
 
+print(
+    optimum,
+    valueFunctions,
+    overallValues,
+    categoriesLBs,
+    errorValuesPlus,
+    errorValuesMinus,
+    # minWeights,
+    # maxWeights,
+    # averageValueFunctions,
+    # averageOverallValues,
+    sep="\n",
+)

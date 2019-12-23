@@ -19,7 +19,7 @@ print("\nPerformance Table \n", performanceTable)
 data = ["good", "medium", "medium", "bad", "bad"]
 rownames = performanceTable.index.values
 alternativesAssignments = pd.DataFrame([data], columns=rownames)
-print("\nAlternative Ranks\n", alternativesAssignments)
+print("\nAlternative Assignments\n", alternativesAssignments)
 
 # criteria to minimize or maximize
 data = ["min", "min", "max"]
@@ -95,8 +95,8 @@ print(
     criteriaNumberOfBreakPoints,
     alternativesAssignments,
     categoriesRanks,
-    0.1,
-    kPostOptimality = 0.01
+    0.5,
+    kPostOptimality = 0.2
 )
 
 print("Post optimal X =")

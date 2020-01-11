@@ -1,22 +1,21 @@
-
-import pandas as pd 
+import pandas as pd
 from Python.TOPSIS import *
 
 ## This test example is the same as http://hodgett.co.uk/topsis-in-excel/
-data = [[5490,51.4,8.5,285],[6500,70.6,7,288],[6489,54.3,7.5,290]]
+data = [[5490, 51.4, 8.5, 285], [6500, 70.6, 7, 288], [6489, 54.3, 7.5, 290]]
 performanceTable = pd.DataFrame(data)
 
-performanceTable.index =  ["Corsa","Clio","Fiesta"]
-performanceTable.columns = ["Purchase Price","Economy","Aesthetics","Boot Capacity"]
+performanceTable.index = ["Corsa", "Clio", "Fiesta"]
+performanceTable.columns = ["Purchase Price", "Economy", "Aesthetics", "Boot Capacity"]
 
 print(performanceTable)
 
-weights = [0.35,0.25,0.25,0.15]
+weights = [0.35, 0.25, 0.25, 0.15]
 weights = pd.DataFrame(weights)
 
 
 criteriaMinMax = ["min", "max", "max", "max"]
-criteriaMinMax= pd.DataFrame(criteriaMinMax)
+criteriaMinMax = pd.DataFrame(criteriaMinMax)
 positiveIdealSolutions = [0.179573776, 0.171636015, 0.159499658, 0.087302767]
 negativeIdealSolutions = [0.212610118, 0.124958799, 0.131352659, 0.085797547]
 
@@ -45,11 +44,31 @@ print(negativeIdealSolutions)
 overall1 = TOPSIS(performanceTable, weights, criteriaMinMax)
 
 print(overall1)
-overall2 = TOPSIS(performanceTable, weights, criteriaMinMax, positiveIdealSolutions, negativeIdealSolutions)
+overall2 = TOPSIS(
+    performanceTable,
+    weights,
+    criteriaMinMax,
+    positiveIdealSolutions,
+    negativeIdealSolutions,
+)
 print(overall2)
-overall3 = TOPSIS(performanceTable, weights, criteriaMinMax, alternativesIDs = ["Corsa","Clio"], criteriaIDs = ["Purchase Price","Economy","Aesthetics"])
+overall3 = TOPSIS(
+    performanceTable,
+    weights,
+    criteriaMinMax,
+    alternativesIDs=["Corsa", "Clio"],
+    criteriaIDs=["Purchase Price", "Economy", "Aesthetics"],
+)
 print(overall3)
-overall4 = TOPSIS(performanceTable, weights, criteriaMinMax, positiveIdealSolutions, negativeIdealSolutions, alternativesIDs = ["Corsa","Clio"], criteriaIDs =["Purchase Price","Economy","Aesthetics"])
+overall4 = TOPSIS(
+    performanceTable,
+    weights,
+    criteriaMinMax,
+    positiveIdealSolutions,
+    negativeIdealSolutions,
+    alternativesIDs=["Corsa", "Clio"],
+    criteriaIDs=["Purchase Price", "Economy", "Aesthetics"],
+)
 print(overall4)
 
 # s1 <- structure(c(0.4817, 0.5182, 0.1780

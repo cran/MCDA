@@ -4,6 +4,7 @@ channels:
   - defaults
 dependencies:
   - _r-mutex=1.0.0=anacondar_1
+  - autopep8=1.4.4=py_0
   - blas=1.0=mkl
   - ca-certificates=2019.11.27=0
   - certifi=2019.11.28=py37_0
@@ -50,6 +51,7 @@ dependencies:
   - numpy-base=1.17.4=py37hc3f5095_0
   - openssl=1.1.1d=he774522_3
   - pip=19.3.1=py37_0
+  - pycodestyle=2.5.0=py37_0
   - python=3.7.5=h8c8aaf0_0
   - r=3.6.0=r36_0
   - r-assertthat=0.2.1=r36h6115d3f_0

@@ -95,8 +95,8 @@ print(
     criteriaNumberOfBreakPoints,
     alternativesAssignments,
     categoriesRanks,
-    0.5,
-    kPostOptimality = 0.2
+    0.3,
+    kPostOptimality = 0.3
 )
 
 print("Post optimal X =")

@@ -873,7 +873,7 @@ def UTASTAR(
     averageValueFunctions = None
     averageOverallValues = None
 
-    if not (kPostOptimality is None): # and (optimum.iloc[0, 0] == 0):
+    if not (kPostOptimality is None) and (optimum.iloc[0, 0] == 0):
         # add F \leq F* + k(F*) to the constraints, where F* is the optimum and k(F*) is a positive threshold, which is a small proportion of F*
         mat = mat.append(obj.transpose(), ignore_index=True)
         dire.append("<=")

@@ -1,5 +1,5 @@
 import pandas as pd
-from Python.TOPSIS import *
+from Pyth.TOPSIS import *
 
 ## This test example is the same as http://hodgett.co.uk/topsis-in-excel/
 data = [[5490, 51.4, 8.5, 285], [6500, 70.6, 7, 288], [6489, 54.3, 7.5, 290]]

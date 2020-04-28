@@ -1,6 +1,8 @@
 import pandas as pd
 import random  
-from Python.UTASTAR import *
+import sys 
+sys.path.append("E:/Google Drive/PC SHIT/HMMY/Diplomatiki/methods/MCDA")
+from  Pyth.UTASTAR import *
 
 # UTASTAR EXAMPLE
 # the separation threshold
@@ -264,6 +266,7 @@ data = pd.DataFrame(
 data = data.transpose()
 # df = df.append(data)
 df = pd.concat([data, df], ignore_index=False)
+
 
 print(df)
 df.to_excel(

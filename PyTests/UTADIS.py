@@ -1,5 +1,5 @@
 import pandas as pd
-from Python.UTADIS import *
+from Pyth.UTADIS import *
 
 # UTADIS EXAMPLE
 # the separation threshold

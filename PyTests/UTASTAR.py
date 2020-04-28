@@ -1,5 +1,6 @@
 import pandas as pd
-from Python.UTASTAR import *
+
+import Pyth.UTASTAR
 
 # UTASTAR EXAMPLE
 # the separation threshold

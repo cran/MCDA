@@ -72,13 +72,16 @@ rownames = performanceTable.index.values
 alternativesRanks = pd.DataFrame([data], columns=rownames)
 print("\nAlternative Ranks\n", alternativesRanks)
 
-#k=0
-#minoptimum = 10 
-#while True:
+#Find min breakpoint block 
+""" 
+k=0
+minoptimum = 10 
+while True:
 
-# # criteria to minimize or maximize
-# choices = ["max","min"]
-# minmaxdata = [random.choice(choices) for i in range(df.shape[1]-1)]
+# criteria to minimize or maximize
+choices = ["max","min"]
+minmaxdata = [random.choice(choices) for i in range(df.shape[1]-1)]
+ """
 
 minmaxdata = ['min',
  'min',
@@ -136,30 +139,32 @@ criteriaNumberOfBreakPoints = pd.DataFrame(
     alternativesRanks=alternativesRanks,
 )
 
-#k = k+1
-#print(k,"<--iteration")
+###Find optimum break points 
+""" k = k+1
+print(k,"<--iteration")
     
 
 
-    # if float(optimum.values) < minoptimum:
-    #     minoptimum = float(optimum.values)
-    #     print(float(optimum.values),"min optimum ")
-    #     minbpdata = bpdata
-    #     minminmaxdata = minmaxdata
+    if float(optimum.values) < minoptimum:
+        minoptimum = float(optimum.values)
+        print(float(optimum.values),"min optimum ")
+        minbpdata = bpdata
+        minminmaxdata = minmaxdata
 
-    #     tempminoptimum = pd.DataFrame([minoptimum])
-    #     tempminbpdata = pd.DataFrame([minbpdata])
-    #     tempminminmaxdata = pd.DataFrame([minminmaxdata])
+        tempminoptimum = pd.DataFrame([minoptimum])
+        tempminbpdata = pd.DataFrame([minbpdata])
+        tempminminmaxdata = pd.DataFrame([minminmaxdata])
 
-    #     tempminoptimum.to_excel(r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\minoptimum.xlsx")
-    #     tempminbpdata.to_excel(r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\minbpdata.xlsx")
-    #     tempminminmaxdata.to_excel(r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\minminmaxdata.xlsx")
+        tempminoptimum.to_excel(r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\minoptimum.xlsx")
+        tempminbpdata.to_excel(r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\minbpdata.xlsx")
+        tempminminmaxdata.to_excel(r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\minminmaxdata.xlsx")
 
-    # if float(optimum.values) == 0:
-    #     print(bpdata)
-    #     print(minmaxdata)
-    #     break
-""" 
+    if float(optimum.values) == 0:
+        print(bpdata)
+        print(minmaxdata)
+        break """
+
+
 print(
     optimum,  
     valueFunctions,
@@ -173,12 +178,10 @@ print(
     averageValueFunctions,
     averageOverallValues,
     sep="\n",
-) """
+) 
 
-
-
-#print("X ends Here")
-
+#Utastar with post optimality but not needed as optimality is not achivied
+""" 
 (
     optimum,
     valueFunctions,
@@ -213,11 +216,12 @@ print(
     averageValueFunctions,
     averageOverallValues,
     sep="\n",
-)
+) """
 
 print("End")
 
 
+#Output to excel 
 valueFunctions.to_excel(
     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\ValueFunctions.xlsx"
 )
@@ -236,14 +240,15 @@ averageOverallValues.to_excel(
 
 
 
+# Results excel 
 # Insert to multi criteria matrix
 
 # Insert averageOverallValues as column  to Alternatives
-df.insert(21, "AverageOverallValues", averageOverallValues.transpose())
+    #df.insert(21, "AverageOverallValues", averageOverallValues.transpose())
 # Insert overallValues values as column to Alternatives
-df.insert(22, "OverallValues", overallValues.transpose())
+df.insert(21, "OverallValues", overallValues.transpose())
 # Inert outRanks values as column to Alternatives
-df.insert(23, "OutRanks", outRanks.transpose())
+df.insert(22, "OutRanks", outRanks.transpose())
 
 #Accurancy true postives + false postives 
 nrows= df.shape[0]
@@ -251,26 +256,27 @@ y=df.columns.get_loc("Class")
 y2=df.columns.get_loc("OutRanks")
 accur = [1 for x in range(1, df.shape[0]) if (df.iloc[x,y2]<nrows/2 and df.iloc[x,y] == 1)   ]
 accur2 = [1 for x in range(1, df.shape[0]) if (df.iloc[x,y2]>nrows/2 and df.iloc[x,y]==2) ]
-
-print("Accuracy", sum(accur+accur2))
-
-
+#print("Accuracy", sum(accur+accur2))
 
 # Insert valueFunctions to criteria/columns
 data = [valueFunctions.iloc[x, (bpdata[x//2]-1)] for x in range(1, len(valueFunctions), 2) ]
 data = pd.DataFrame(data, index=performanceTable.columns.values, columns=["ValueFunc"])
 valuefunc = data.transpose()
 
+
 #distribute overall values to all dataframe based on valueFunc
 for i in range(0,nrows):
-    margin = df.iloc[i,-2] * valuefunc.values
-    df.iloc[i,0:-4] = df.iloc[i,0:-4] * margin.flatten()
+    #margin = df.iloc[i,-2] / valuefunc.values /100
+    #df.replace("inf", 0 , regex=True, inplace=True)
+    df.iloc[i,0:-3] = df.iloc[i,-2] * valuefunc.values.flatten()# margin.flatten() #
+    #df.iloc[i,0:-3] = pd.DataFrame(df.iloc[i,0:-3].dot(valuefunc.values.flatten()))
+
 
 #Append valuefunc row 
 df = pd.concat([valuefunc, df], ignore_index=False)
 
-# Insert averagevalueFunctions to criteria/columns
-data = [
+# Insert averagevalueFunctions to criteria/columns block 
+""" data = [
     averageValueFunctions.iloc[x, (bpdata[x//2]-1)] for x in range(1, len(averageValueFunctions), 2)
 ]
 data = pd.DataFrame(
@@ -279,7 +285,7 @@ data = pd.DataFrame(
 avaluefunc = data.transpose()
 # append average value func row 
 df = pd.concat([avaluefunc, df], ignore_index=False)
-
+ """
 
 print(df)
 df.to_excel(

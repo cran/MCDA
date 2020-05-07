@@ -15,6 +15,7 @@ epsilon = 0.05
 
 df = pd.read_excel(
     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\multicriteria matrix.xlsx",
+    #sheet_name="main",
     sheet_name="multimatrix",
 )
 # Data Processing
@@ -231,12 +232,13 @@ overallValues.to_excel(
 outRanks.to_excel(
     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\OutRanks.xlsx"
 )
-averageValueFunctions.to_excel(
-    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\AverageValueFunctions.xlsx"
-)
-averageOverallValues.to_excel(
-    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\AverageOverallValues.xlsx"
-)
+
+# averageValueFunctions.to_excel(
+#     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\AverageValueFunctions.xlsx"
+# )
+# averageOverallValues.to_excel(
+#     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\AverageOverallValues.xlsx"
+# )
 
 
 
@@ -263,7 +265,7 @@ data = [valueFunctions.iloc[x, (bpdata[x//2]-1)] for x in range(1, len(valueFunc
 data = pd.DataFrame(data, index=performanceTable.columns.values, columns=["ValueFunc"])
 valuefunc = data.transpose()
 
-
+# TODO Replace -3 and -2 with more adjustable code 
 #distribute overall values to all dataframe based on valueFunc
 for i in range(0,nrows):
     #margin = df.iloc[i,-2] / valuefunc.values /100
@@ -292,5 +294,93 @@ df.to_excel(
     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\Results.xlsx"
 )
 
-print("Accuracy", sum(accur+accur2))
+print("Accuracy", sum(accur+accur2)/nrows)
 
+
+#kmeans feautre reduction 
+#imports
+import matplotlib.pyplot as plt
+import numpy as np 
+from matplotlib.image import imread
+import pandas as pd
+import seaborn as sns
+from sklearn.datasets.samples_generator import (make_blobs,
+                                                make_circles,
+                                                make_moons)
+from sklearn.cluster import KMeans, SpectralClustering
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import silhouette_samples, silhouette_score
+""" 
+%matplotlib inline
+sns.set_context('notebook')
+plt.style.use('fivethirtyeight')
+from warnings import filterwarnings
+filterwarnings('ignore')
+
+
+# Plot the data
+plt.figure(figsize=(6, 6))
+plt.scatter(dfplot.iloc[:, 1], dfplot.iloc[:,2],)
+plt.xlabel('Eruption time in mins')
+plt.ylabel('Waiting time to next eruption')
+plt.title('Visualization of  data')
+ """
+# matrix to be used for k menas
+from math import pi
+
+
+#data
+dfplot = df.iloc[1:,:-3]
+
+###########parralel coordinate plot ############
+pd.DataFrame(dfplot).plot()
+plt.show
+
+
+######### radar graph ###############
+categories=list(dfplot)[1:]
+N = len(categories)
+
+values=dfplot.loc[0].drop('check_account').values.flatten().tolist()
+values += values[:1]
+values
+ 
+# What will be the angle of each axis in the plot? (we divide the plot / number of variable)
+angles = [n / float(N) * 2 * pi for n in range(N)]
+angles += angles[:1]
+ 
+# Initialise the spider plot
+ax = plt.subplot(111, polar=True)
+ 
+# Draw one axe per variable + add labels labels yet
+plt.xticks(angles[:-1], categories, color='grey', size=8)
+ 
+# Draw ylabels
+ax.set_rlabel_position(0)
+plt.yticks([10,20,30], ["10","20","30"], color="grey", size=7)
+plt.ylim(0,40)
+ 
+# Plot data
+ax.plot(angles, values, linewidth=1, linestyle='solid')
+ 
+# Fill area
+ax.fill(angles, values, 'b', alpha=0.1)
+
+
+#############parallel plot with pandas #######
+import pandas
+from pandas.plotting import parallel_coordinates
+
+# Make the plot
+data = dfplot.transpose()
+data.insert(0,"Class",data.index)
+
+parallel_coordinates(data, "Class" , colormap=plt.get_cmap("Set2"))
+plt.show()
+
+
+######## Histograms with pandas##### pair of 2 
+dfplot.hist(bins=15, color='steelblue', edgecolor='black', linewidth=1.0,
+           xlabelsize=8, ylabelsize=8, grid=False)
+
+plt.tight_layout(rect=(0, 0, 1.2, 1.2))

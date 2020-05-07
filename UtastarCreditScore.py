@@ -338,17 +338,16 @@ plt.show
 
 
 ######### radar graph ###############
-categories=list(dfplot)[1:]
+categories=list(dfplot)
 N = len(categories)
 
-values=dfplot.loc[0].drop('check_account').values.flatten().tolist()
+values=dfplot.loc[0].values.flatten().tolist()
 values += values[:1]
-values
+values#=dfplot.values.flatten().tolist()
  
 # What will be the angle of each axis in the plot? (we divide the plot / number of variable)
 angles = [n / float(N) * 2 * pi for n in range(N)]
 angles += angles[:1]
- 
 # Initialise the spider plot
 ax = plt.subplot(111, polar=True)
  
@@ -357,8 +356,8 @@ plt.xticks(angles[:-1], categories, color='grey', size=8)
  
 # Draw ylabels
 ax.set_rlabel_position(0)
-plt.yticks([10,20,30], ["10","20","30"], color="grey", size=7)
-plt.ylim(0,40)
+plt.yticks([0.05,0.1,0.15], ["0.05","0.0.1","0.0.15"], color="grey", size=7)
+plt.ylim(0,0.15)
  
 # Plot data
 ax.plot(angles, values, linewidth=1, linestyle='solid')

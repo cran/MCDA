@@ -384,3 +384,38 @@ dfplot.hist(bins=15, color='steelblue', edgecolor='black', linewidth=1.0,
            xlabelsize=8, ylabelsize=8, grid=False)
 
 plt.tight_layout(rect=(0, 0, 1.2, 1.2))
+
+
+
+###### Bar Plot#########
+fig = plt.figure(figsize = (6, 4))
+title = fig.suptitle("Wine Quality Frequency", fontsize=14)
+fig.subplots_adjust(top=0.85, wspace=0.3)
+
+ax = fig.add_subplot(1,1, 1)
+ax.set_xlabel("Quality")
+ax.set_ylabel("Frequency") 
+w_q = dfplot['check_account'].value_counts()
+w_q = (list(w_q.index), list(w_q.values))
+ax.tick_params(axis='both', which='major', labelsize=8.5)
+bar = ax.bar(w_q[0], w_q[1], color='steelblue', 
+        edgecolor='black', linewidth=1)
+
+# Correlation Matrix Heatmap
+f, ax = plt.subplots(figsize=(10, 6))
+corr = dfplot.corr()
+hm = sns.heatmap(round(corr,2), annot=True, ax=ax, cmap="coolwarm",fmt='.2f',
+                 linewidths=.05)
+f.subplots_adjust(top=0.93)
+t= f.suptitle('Wine Attributes Correlation Heatmap', fontsize=14)
+
+# Pair-wise Scatter Plots
+cols = ['density', 'residual sugar', 'total sulfur dioxide', 'fixed acidity']
+cols = dfplot.columns
+pp = sns.pairplot(dfplot[cols], size=1.8, aspect=1.8,
+                  plot_kws=dict(edgecolor="k", linewidth=0.5),
+                  diag_kind="kde", diag_kws=dict(shade=True))
+
+fig = pp.fig 
+fig.subplots_adjust(top=0.93, wspace=0.3)
+t = fig.suptitle('Wine Attributes Pairwise Plots', fontsize=14)

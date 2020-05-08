@@ -83,7 +83,7 @@ while True:
 choices = ["max","min"]
 minmaxdata = [random.choice(choices) for i in range(df.shape[1]-1)]
  """
-
+""" 
 minmaxdata = ['min',
  'min',
  'max',
@@ -106,7 +106,7 @@ minmaxdata = ['min',
  'min']
 columnnames = performanceTable.columns.values
 criteriaMinMax = pd.DataFrame([minmaxdata], columns=columnnames)
-print("\nCriteria Min Max \n", criteriaMinMax,)
+print("\nCriteria Min Max \n", criteriaMinMax,) """
 
 bpdata = [4, 3, 3, 4, 4, 4, 3, 4, 2, 3, 3, 3, 4, 4, 3, 2, 4, 4, 3, 3]
 #choices = [2,3,4]
@@ -505,8 +505,9 @@ plt.ylabel('WCSS')
 plt.show()
 
 
+
 #5 According to the Elbow graph we deterrmine the clusters number as #5. Applying k-means algorithm to the X dataset.
-kmeans = KMeans(n_clusters=4, init ='k-means++', max_iter=300, n_init=10,random_state=0 )
+kmeans = KMeans(n_clusters=2, init ='k-means++', max_iter=300, n_init=10,random_state=0 )
 
 # We are going to use the fit predict method that returns for each #observation which cluster it belongs to. 
 # The cluster to which #it belongs and it will return this cluster numbers into a 
@@ -536,4 +537,26 @@ plt.title('Clusters k-means')
 
 #plt.xlabel('Values)')
 #plt.ylabel('Spending Score(1-100')
+
 plt.show()
+
+####confusion mattrix
+from sklearn.metrics import confusion_matrix
+
+confusion_matrix()
+mat = confusion_matrix(dfplot.values , df["Class"])
+sns.heatmap(mat.T, square=True, annot=True, fmt='d', cbar=False,
+            xticklabels=dfplot.columns,
+            yticklabels=dfplot.index)
+plt.xlabel('true label')
+plt.ylabel('predicted label')
+
+
+####spectral clustering 
+X = dfk
+from sklearn.cluster import SpectralClustering
+model = SpectralClustering(n_clusters=2, affinity='nearest_neighbors',
+                           assign_labels='kmeans')
+labels = model.fit_predict(X)
+plt.scatter(X[:, 0], X[:, 1], c=labels,
+            s=50, cmap='viridis')

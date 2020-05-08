@@ -298,6 +298,8 @@ print("Accuracy", sum(accur+accur2)/nrows)
 
 
 #kmeans feautre reduction 
+
+### pari wise 
 #imports
 import matplotlib.pyplot as plt
 import numpy as np 
@@ -310,8 +312,8 @@ from sklearn.datasets.samples_generator import (make_blobs,
 from sklearn.cluster import KMeans, SpectralClustering
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import silhouette_samples, silhouette_score
-""" 
-%matplotlib inline
+ 
+#%matplotlib inline
 sns.set_context('notebook')
 plt.style.use('fivethirtyeight')
 from warnings import filterwarnings
@@ -324,7 +326,7 @@ plt.scatter(dfplot.iloc[:, 1], dfplot.iloc[:,2],)
 plt.xlabel('Eruption time in mins')
 plt.ylabel('Waiting time to next eruption')
 plt.title('Visualization of  data')
- """
+ 
 # matrix to be used for k menas
 from math import pi
 
@@ -333,11 +335,15 @@ from math import pi
 dfplot = df.iloc[1:,:-3]
 
 ###########parralel coordinate plot ############
+dfplot = df.iloc[1:,:-3]
+dfplot=performanceTable
+
 pd.DataFrame(dfplot).plot()
 plt.show
 
 
 ######### radar graph ###############
+c
 categories=list(dfplot)
 N = len(categories)
 
@@ -356,8 +362,8 @@ plt.xticks(angles[:-1], categories, color='grey', size=8)
  
 # Draw ylabels
 ax.set_rlabel_position(0)
-plt.yticks([0.05,0.1,0.15], ["0.05","0.0.1","0.0.15"], color="grey", size=7)
-plt.ylim(0,0.15)
+plt.yticks([0.002,0.005,0.001], ["0.002","0.005","0.01"], color="grey", size=7)
+plt.ylim(0,0.005) # 5 for perfoncatable
  
 # Plot data
 ax.plot(angles, values, linewidth=1, linestyle='solid')
@@ -371,50 +377,101 @@ import pandas
 from pandas.plotting import parallel_coordinates
 
 # Make the plot
-data = dfplot.transpose()
+data = performanceTable.iloc[:,:5].transpose()
+data.insert(0,"Class",data.index)
+
+parallel_coordinates(data, "Class", colormap=plt.get_cmap("Set2") )
+plt.show()
+
+data = performanceTable.iloc[:,10:]
+data.insert(0,"Class",data.index)
+
+parallel_coordinates(data, "Class", colormap=plt.get_cmap("Set2") )
+plt.show()
+
+##### values 
+dfplot = df.iloc[1:,:-3]
+
+data = dfplot.iloc[:,:10] #.transpose()
+data.insert(0,"Class",data.index)
+
+parallel_coordinates(data, "Class", colormap=plt.get_cmap("Set2") )
+plt.show()
+
+###
+data = dfplot.iloc[:,10:]
 data.insert(0,"Class",data.index)
 
 parallel_coordinates(data, "Class" , colormap=plt.get_cmap("Set2"))
 plt.show()
 
-
 ######## Histograms with pandas##### pair of 2 
+dfplot = df.iloc[1:,:-3]
 dfplot.hist(bins=15, color='steelblue', edgecolor='black', linewidth=1.0,
-           xlabelsize=8, ylabelsize=8, grid=False)
+           xlabelsize=10, ylabelsize=10, grid=False )
+plt.tight_layout()
+plt.tight_layout(rect=(0, 0, 5, 5))
 
-plt.tight_layout(rect=(0, 0, 1.2, 1.2))
+performanceTable.hist(bins=15, color='steelblue', edgecolor='black', linewidth=1.0,
+           xlabelsize=10, ylabelsize=10, grid=False )
+plt.tight_layout()
+plt.tight_layout(rect=(0, 0, 5, 5))
+
+###### Bar Plot######### per feaure 
 
 
+for i in range(0,performanceTable.shape[1]-1):
+    fig = plt.figure(figsize = (6, 4))
+    title = fig.suptitle(performanceTable.iloc[:,i].name, fontsize=14)
+    fig.subplots_adjust(top=0.85, wspace=0.3)
 
-###### Bar Plot#########
+    ax = fig.add_subplot(1,1, 1)
+    ax.set_xlabel("Frequency")
+    ax.set_ylabel("Values") 
+    w_q = performanceTable.iloc[:,i].value_counts() ## original data
+    #w_q = dfplot['check_account'].value_counts()
+    w_q = (list(w_q.index), list(w_q.values))
+    ax.tick_params(axis='both', which='major', labelsize=8.5)
+    bar = ax.bar(w_q[1], w_q[0], color='steelblue', 
+            edgecolor='black', linewidth=1)
+
+dfplot = df.iloc[1:,:-3]
+for i in range(0,dfplot.shape[1]-1):
 fig = plt.figure(figsize = (6, 4))
-title = fig.suptitle("Wine Quality Frequency", fontsize=14)
+    title = fig.suptitle(dfplot.iloc[:,i].name, fontsize=14)
 fig.subplots_adjust(top=0.85, wspace=0.3)
 
 ax = fig.add_subplot(1,1, 1)
-ax.set_xlabel("Quality")
-ax.set_ylabel("Frequency") 
-w_q = dfplot['check_account'].value_counts()
+    ax.set_xlabel("Frequency")
+    ax.set_ylabel("Values") 
+    w_q = dfplot.iloc[:,i].value_counts() ## original data
+    #w_q = dfplot['check_account'].value_counts()
 w_q = (list(w_q.index), list(w_q.values))
 ax.tick_params(axis='both', which='major', labelsize=8.5)
-bar = ax.bar(w_q[0], w_q[1], color='steelblue', 
+    bar = ax.bar(w_q[1], w_q[0], color='steelblue', 
         edgecolor='black', linewidth=1)
 
-# Correlation Matrix Heatmap
+# Correlation Matrix Heatmap with original matrix data 
+
 f, ax = plt.subplots(figsize=(10, 6))
-corr = dfplot.corr()
+corr = performanceTable.corr()
 hm = sns.heatmap(round(corr,2), annot=True, ax=ax, cmap="coolwarm",fmt='.2f',
                  linewidths=.05)
 f.subplots_adjust(top=0.93)
 t= f.suptitle('Wine Attributes Correlation Heatmap', fontsize=14)
 
 # Pair-wise Scatter Plots
-cols = ['density', 'residual sugar', 'total sulfur dioxide', 'fixed acidity']
-cols = dfplot.columns
-pp = sns.pairplot(dfplot[cols], size=1.8, aspect=1.8,
+
+#dfplot = performanceTable
+
+dfplot=performanceTable
+dfplot = df.iloc[1:,:-3]
+
+cols = dfplot.iloc[:,:5].columns
+pp = sns.pairplot(dfplot[cols], size=2, aspect=1,
                   plot_kws=dict(edgecolor="k", linewidth=0.5),
                   diag_kind="kde", diag_kws=dict(shade=True))
 
 fig = pp.fig 
 fig.subplots_adjust(top=0.93, wspace=0.3)
-t = fig.suptitle('Wine Attributes Pairwise Plots', fontsize=14)
+t = fig.suptitle('Credit card Pairwise Plots', fontsize=14)

@@ -298,6 +298,8 @@ print("Accuracy", sum(accur+accur2)/nrows)
 
 
 #kmeans feautre reduction 
+#data
+dfplot = df.iloc[1:,:-3]
 
 ### pari wise 
 #imports
@@ -319,6 +321,7 @@ plt.style.use('fivethirtyeight')
 from warnings import filterwarnings
 filterwarnings('ignore')
 
+dfplot = df.iloc[1:,:-3]
 
 # Plot the data
 plt.figure(figsize=(6, 6))
@@ -331,8 +334,7 @@ plt.title('Visualization of  data')
 from math import pi
 
 
-#data
-dfplot = df.iloc[1:,:-3]
+
 
 ###########parralel coordinate plot ############
 dfplot = df.iloc[1:,:-3]
@@ -343,7 +345,7 @@ plt.show
 
 
 ######### radar graph ###############
-c
+
 categories=list(dfplot)
 N = len(categories)
 

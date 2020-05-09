@@ -27,9 +27,9 @@ df.columns = df.iloc[0]
 # Remove junk row,column
 df = df.iloc[1:, 1:]
 
-df["purpose"].replace("Α40", "11", regex=True, inplace=True)
+df["purpose"].replace("Α40 ", "11", regex=True, inplace=True)
 # df["purpose"].replace('Α410','10',regex=True,inplace=True)
-
+#df.iloc[15]
 
 # Change qualitative values to quantitative
 df.replace("(.)(?!$)", "", regex=True, inplace=True)
@@ -59,11 +59,31 @@ df = df.reset_index(drop=True)
 # Convert all dataframe values to integer
 df = df.apply(pd.to_numeric)
 
-df.describe()
+#choose good values with good distribution 
+#######VAR#########
+# temp = pd.DataFrame() 
+# temp["Var"] = df.var(axis = 1)
+# temp = temp.sort_values("Var")
+# nr = temp.index.values
+# nr = nr[600:]
 
+#####std########
+# temp = df.transpose().describe()
+# temp = temp.transpose()
+# temp = temp.sort_values('std')
+# nr = temp.index.values
+# nr = nr[600:]
+
+#### random #####
+#nr = random.sample(range(1000),100)
+
+#### first 100
+nr= [x for x in range(400)]
+
+df= df.iloc[nr,:]
 # the performance table
 # removing the class column
-performanceTable = df.iloc[:, :-1]
+performanceTable = df.iloc[:,:-1]
 print("\nPerformance Table \n", performanceTable)
 
 # ranks of the alternatives
@@ -83,32 +103,21 @@ while True:
 choices = ["max","min"]
 minmaxdata = [random.choice(choices) for i in range(df.shape[1]-1)]
  """
-""" 
-minmaxdata = ['min',
- 'min',
- 'max',
- 'max',
- 'min',
- 'min',
- 'max',
- 'min',
- 'min',
- 'max',
- 'min',
- 'max',
- 'max',
- 'max',
- 'max',
- 'max',
- 'max',
- 'min',
- 'max',
- 'min']
+
+#minmaxdata = ['max' for i in range(20)]
+minmaxdata = ["max","min","max","min", "max","max","max","max", "max","max","min","max",  "min","min","max","max", "max","min","max","min"]
+
+#minmaxdata = ['min','min','max','max','min','min','max','min','min','max','min','max','max','max','max','max','max','min','max','min']
+
 columnnames = performanceTable.columns.values
 criteriaMinMax = pd.DataFrame([minmaxdata], columns=columnnames)
-print("\nCriteria Min Max \n", criteriaMinMax,) """
+print("\nCriteria Min Max \n", criteriaMinMax,) 
 
-bpdata = [4, 3, 3, 4, 4, 4, 3, 4, 2, 3, 3, 3, 4, 4, 3, 2, 4, 4, 3, 3]
+
+#bpdata = [4, 3, 3, 4, 4 , 4, 3, 4, 2, 3, 3, 3, 4, 4, 3, 2, 4, 4, 3, 3]
+bpdata = [3,4,3,3, 3,3,3,4, 3,3,3,3, 4,3,3,3, 3,2,2,2]
+#bpdata = [3 for i in range(20)]
+
 #choices = [2,3,4]
 #bpdata = [random.choice(choices) for i in range(df.shape[1]-1)]
 
@@ -166,6 +175,7 @@ print(k,"<--iteration")
         break """
 
 
+
 print(
     optimum,  
     valueFunctions,
@@ -180,44 +190,6 @@ print(
     averageOverallValues,
     sep="\n",
 ) 
-
-#Utastar with post optimality but not needed as optimality is not achivied
-""" 
-(
-    optimum,
-    valueFunctions,
-    overallValues,
-    outRanks,
-    errorValuesPlus,
-    errorValuesMinus,
-    tau,
-    minWeights,
-    maxWeights,
-    averageValueFunctions,
-    averageOverallValues,
-) = UTASTAR(
-    performanceTable,
-    criteriaMinMax,
-    criteriaNumberOfBreakPoints,
-    epsilon,
-    alternativesRanks=alternativesRanks,
-    kPostOptimality=0.01,
-)
-
-print(
-    optimum,
-    valueFunctions,
-    overallValues,
-    outRanks,
-    errorValuesPlus,
-    errorValuesMinus,
-    tau,
-    minWeights,
-    maxWeights,
-    averageValueFunctions,
-    averageOverallValues,
-    sep="\n",
-) """
 
 print("End")
 
@@ -248,6 +220,7 @@ outRanks.to_excel(
 # Insert averageOverallValues as column  to Alternatives
     #df.insert(21, "AverageOverallValues", averageOverallValues.transpose())
 # Insert overallValues values as column to Alternatives
+
 df.insert(21, "OverallValues", overallValues.transpose())
 # Inert outRanks values as column to Alternatives
 df.insert(22, "OutRanks", outRanks.transpose())
@@ -277,17 +250,6 @@ for i in range(0,nrows):
 #Append valuefunc row 
 df = pd.concat([valuefunc, df], ignore_index=False)
 
-# Insert averagevalueFunctions to criteria/columns block 
-""" data = [
-    averageValueFunctions.iloc[x, (bpdata[x//2]-1)] for x in range(1, len(averageValueFunctions), 2)
-]
-data = pd.DataFrame(
-    data, index=performanceTable.columns.values, columns=["AverageValueFunc"]
-)
-avaluefunc = data.transpose()
-# append average value func row 
-df = pd.concat([avaluefunc, df], ignore_index=False)
- """
 
 print(df)
 df.to_excel(
@@ -296,6 +258,20 @@ df.to_excel(
 
 print("Accuracy", sum(accur+accur2)/nrows)
 
+
+
+
+
+
+
+
+
+
+
+######################################
+###################################
+###############################################
+###############################################
 
 #kmeans feautre reduction 
 #data
@@ -438,6 +414,8 @@ for i in range(0,performanceTable.shape[1]-1):
             edgecolor='black', linewidth=1)
 
 dfplot = df.iloc[1:,:-3]
+
+
 for i in range(0,dfplot.shape[1]-1):
 fig = plt.figure(figsize = (6, 4))
     title = fig.suptitle(dfplot.iloc[:,i].name, fontsize=14)
@@ -453,8 +431,7 @@ ax.tick_params(axis='both', which='major', labelsize=8.5)
     bar = ax.bar(w_q[1], w_q[0], color='steelblue', 
         edgecolor='black', linewidth=1)
 
-# Correlation Matrix Heatmap with original matrix data 
-
+# Correlation Matrix Heatmap
 f, ax = plt.subplots(figsize=(10, 6))
 corr = performanceTable.corr()
 hm = sns.heatmap(round(corr,2), annot=True, ax=ax, cmap="coolwarm",fmt='.2f',

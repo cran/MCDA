@@ -53,6 +53,7 @@ df["telephone"].replace("1", "0", regex=True, inplace=True)
 # Set index name
 df.columns.name = "Alternatives"
 
+
 # Reset index
 df = df.reset_index(drop=True)
 
@@ -72,7 +73,7 @@ df = df.apply(pd.to_numeric)
 # temp = temp.transpose()
 # temp = temp.sort_values('std')
 # nr = temp.index.values
-# nr = nr[310:690]
+# nr = nr[210:690]
 
 #### random #####
 #nr = random.sample(range(1000),100)
@@ -243,10 +244,11 @@ valuefunc = data.transpose()
 
 # TODO Replace -3 and -2 with more adjustable code 
 #distribute overall values to all dataframe based on valueFunc
+ncols= performanceTable.shape[1]
 for i in range(0,nrows):
     #margin = df.iloc[i,-2] / valuefunc.values /100
     #df.replace("inf", 0 , regex=True, inplace=True)
-    df.iloc[i,0:-3] = df.iloc[i,-2] * valuefunc.values.flatten()# margin.flatten() #
+    df.iloc[i,0:ncols] = df.iloc[i,-2] * valuefunc.values.flatten()# margin.flatten() #
     #df.iloc[i,0:-3] = pd.DataFrame(df.iloc[i,0:-3].dot(valuefunc.values.flatten()))
 
 

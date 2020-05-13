@@ -73,7 +73,7 @@ df= df.iloc[nr,:]
 
 # the performance table
 # removing the class column
-performanceTable = df.iloc[:,:-3]# -3 adjusted for removed columns 
+performanceTable = df.iloc[:,:-1]# -3 adjusted for removed columns 
 #print("\nPerformance Table \n", performanceTable)
 
 
@@ -81,17 +81,18 @@ performanceTable = df.iloc[:,:-3]# -3 adjusted for removed columns
 df = pd.read_excel(
     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\Results.xlsx",
 )
-dfclass = df.iloc[1:,1:-2]
-dfclass = dfclass.drop(["telephone"],axis=1)
-dfclass = dfclass.drop(["foreign"],axis=1)
+dfclass = df.iloc[1:,1:] #-2
+#dfclass = dfclass.drop(["telephone"],axis=1)
+#dfclass = dfclass.drop(["foreign"],axis=1)
 dfclass = dfclass.reset_index(drop=True)
 
-df = df.iloc[1:,1:-5]## adjusted for removed columns
+df = df.iloc[1:,1:-3]## adjusted for removed columns
 df = df.reset_index(drop=True)
 
-###############################################################
-############################ VISULIZATION #####################
-###############################################################
+
+##########################################################################################################
+############################ VISULIZATION ################################################################
+##########################################################################################################
 
 ##kmeans feautre reduction 
 #data
@@ -103,7 +104,15 @@ sns.set_context('notebook')
 plt.style.use('fivethirtyeight')
 filterwarnings('ignore')
 
-#dfplot = df.iloc[1:,:-3]
+
+# Plot the data
+plt.figure(figsize=(6, 6))
+plt.scatter(dfplot.iloc[:, 1], dfplot.iloc[:,2],)
+plt.xlabel('Eruption time in mins')
+plt.ylabel('Waiting time to next eruption')
+plt.title('Visualization of  data')
+ 
+
 dfplot= performanceTable
 
 # Plot the data
@@ -115,8 +124,17 @@ plt.title('Visualization of  data')
  
 # matrix to be used for k menas
 
+################################################
 ###########parralel coordinate plot ############
+#################################################
 dfplot = df
+pd.DataFrame(dfplot).plot()
+plt.show
+
+# matrix to be used for k menas
+
+###########parralel coordinate plot ############
+dfplot = performanceTable
 pd.DataFrame(dfplot).plot()
 plt.show
 
@@ -142,11 +160,16 @@ ax = plt.subplot(111, polar=True)
 # Draw one axe per variable + add labels labels yet
 plt.xticks(angles[:-1], categories, color='grey', size=8)
  
-# Draw ylabels
+# Draw ylabels original data
+#ax.set_rlabel_position(0)
+#plt.yticks([5,10,15], ["5","10","15"], color="grey", size=7)
+#plt.ylim(0,20) # 20 for perfoncatable 0.05 for df
+
+# Draw ylabels credit score data 
 ax.set_rlabel_position(0)
-plt.yticks([0.002,0.005,0.001], ["0.002","0.005","0.01"], color="grey", size=7)
-plt.ylim(0,0.05) # 20 for perfoncatable 0.05 for df
- 
+plt.yticks([0.01,0.02,0.03], ["0.01","0.02","0.03"], color="grey", size=7)
+plt.ylim(0,0.05) # 2
+
 # Plot data
 ax.plot(angles, values, linewidth=1, linestyle='solid')
  
@@ -194,13 +217,13 @@ plt.show()
 ############################################## 
 dfplot = df
 
-dfplot.transpose().hist(figsize=[25,15])
+dfplot.hist(figsize=[25,15])
 plt.tight_layout()
 
 dfplot.hist(bins=15, color='steelblue', edgecolor='black', linewidth=1.0,
            xlabelsize=10, ylabelsize=10, grid=True )
 plt.tight_layout()
-plt.tight_layout(rect=(0, 0, 1, 1))
+plt.tight_layout(rect=(1, 1, 0, 0))
 
 performanceTable.hist(figsize=[20,10])
 plt.tight_layout()
@@ -215,43 +238,52 @@ plt.tight_layout(rect=(0, 0, 5, 5))
 #####################################
 
 for i in range(0,performanceTable.shape[1]-1):
-    fig = plt.figure(figsize = (6, 4))
-    title = fig.suptitle(performanceTable.iloc[:,i].name, fontsize=14)
-    fig.subplots_adjust(top=0.85, wspace=0.3)
+            fig = plt.figure(figsize = (6, 4))
+            title = fig.suptitle(performanceTable.iloc[:,i].name, fontsize=14)
+            fig.subplots_adjust(top=0.85, wspace=0.3)
 
-    ax = fig.add_subplot(1,1, 1)
-    ax.set_xlabel("Frequency")
-    ax.set_ylabel("Values") 
-    w_q = performanceTable.iloc[:,i].value_counts() ## original data
-    #w_q = dfplot['check_account'].value_counts()
-    w_q = (list(w_q.index), list(w_q.values))
-    ax.tick_params(axis='both', which='major', labelsize=8.5)
-    bar = ax.bar(w_q[1], w_q[0], color='steelblue', 
-            edgecolor='black', linewidth=1)
+            ax = fig.add_subplot(1,1, 1)
+            ax.set_xlabel("Frequency")
+            ax.set_ylabel("Values") 
+            w_q = performanceTable.iloc[:,i].value_counts() ## original data
+            #w_q = dfplot['check_account'].value_counts()
+            w_q = (list(w_q.index), list(w_q.values))
+            ax.tick_params(axis='both', which='major', labelsize=8.5)
+            bar = ax.bar(w_q[1], w_q[0], color='steelblue', 
+                    edgecolor='black', linewidth=1)
+            
 
 
 dfplot = df
+fig,axs =plt.subplots(figsize = (25, 15), ncols = 4,nrows= 5)
+i=0
+for nc in range(0,4):
+    for nr in range(0,5):
+        if (i!=20):  
+            #for i in range(0,dfplot.shape[1]):
+            #fig = plt.figure(figsize = (6, 4))
+            #title = fig.suptitle(dfplot.iloc[:,i].name, fontsize=14)
+            #fig.subplots_adjust(top=0.85, wspace=0.3)
+            #ax = fig.add_subplot(4,5,1)
+            #axs.set_xlabel("Frequency")
+            axs[nr,nc].set_title(performanceTable.iloc[:,i].name)
+            #axs[nr,nc].set_ylabel(performanceTable.iloc[:,i].name) 
+            w_q = dfplot.iloc[:,i].value_counts() ## original data
+            w_q = (list(w_q.index), list(w_q.values))
+            #ax.tick_params(axis='both', which='major', labelsize=8.5)
+            bar = axs[nr,nc].bar(w_q[1], w_q[0], color='steelblue', 
+                edgecolor='black', linewidth=1  ) 
+            i=i+1 
+            
+        else: break
+fig.tight_layout()
 
-for i in range(0,dfplot.shape[1]-1):
-    fig = plt.figure(figsize = (6, 4))
-    title = fig.suptitle(dfplot.iloc[:,i].name, fontsize=14)
-    fig.subplots_adjust(top=0.85, wspace=0.3)
-
-    ax = fig.add_subplot(1,1, 1)
-    ax.set_xlabel("Frequency")
-    ax.set_ylabel("Values") 
-    w_q = dfplot.iloc[:,i].value_counts() ## original data
-    #w_q = dfplot['check_account'].value_counts()
-    w_q = (list(w_q.index), list(w_q.values))
-    ax.tick_params(axis='both', which='major', labelsize=8.5)
-    bar = ax.bar(w_q[1], w_q[0], color='steelblue', 
-        edgecolor='black', linewidth=1)
 
 #############################
 # Correlation Matrix Heatmap##
 #############################
 
-f, ax = plt.subplots(figsize=(10, 6))
+f, ax = plt.subplots(figsize=(15, 10))
 corr = performanceTable.corr()
 hm = sns.heatmap(round(corr,2), annot=True, ax=ax, cmap="coolwarm",fmt='.2f',
                  linewidths=.05)
@@ -290,7 +322,7 @@ wcss=[]
 #dfk = performanceTable.values
 dfk = df.transpose().values 
 
-for i in range(1,19): 
+for i in range(1,20): 
     kmeans = KMeans(n_clusters=i, init ='k-means++', max_iter=300,  n_init=10,random_state=0 )
 
     kmeans.fit(dfk)
@@ -298,44 +330,110 @@ for i in range(1,19):
     wcss.append(kmeans.inertia_)
 #kmeans inertia_ attribute is:  Sum of squared distances of samples #to their closest cluster center.
 #4.Plot the elbow graph
-plt.plot(range(1,19),wcss)
+plt.plot(range(1,20),wcss)
 plt.title('The Elbow Method Graph')
 plt.xlabel('Number of clusters')
 plt.ylabel('WCSS')
 plt.show()
 
 
-
 #5 According to the Elbow graph we deterrmine the clusters number as #5. Applying k-means algorithm to the X dataset.
-kmeans = KMeans(n_clusters=10, init ='k-means++', max_iter=300, n_init=10,random_state=0 )
+kmeans = KMeans(n_clusters=2, init ='k-means++', max_iter=300, n_init=10,random_state=0 )
 
 # We are going to use the fit predict method that returns for each #observation which cluster it belongs to. 
 # The cluster to which #it belongs and it will return this cluster numbers into a 
 # # single vector that is  called y K-means
-
 X = dfk
 y_kmeans = kmeans.fit_predict(X)
 
+#6 Visualising the clusters based on prediction 
+#original values 
+#plt.scatter(X[y_kmeans==0, 0], X[y_kmeans==0, 1], s=10, c='red', label ='Cluster 1' )
+#plt.scatter(X[y_kmeans==1, 0], X[y_kmeans==1, 1], s=10, c='blue', label ='Cluster 2')
 
-# #6 Visualising the clusters based on prediction 
-plt.scatter(X[y_kmeans==0, 0], X[y_kmeans==0, 1], s=10, c='red', label ='Cluster 1' )
-plt.scatter(X[y_kmeans==1, 0], X[y_kmeans==1, 1], s=10, c='blue', label ='Cluster 2')
-
+#credit score values
+plt.scatter(X.iloc[y_kmeans==0, 0], X.iloc[y_kmeans==0, 1], s=10, c='red', label ='Cluster 1' )
+plt.scatter(X.iloc[y_kmeans==1, 0], X.iloc[y_kmeans==1, 1], s=10, c='blue', label ='Cluster 2')
 
 #visual based on actual values values 
 #Plot the centroid. This time we're going to use the cluster centres  
 # attribute that returns here the coordinates of the centroid.
 plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
 plt.title('Clusters k-means')
-#plt.xlim(0.0025,0.0045)# predicted
+#plt.xlim(0.0025,0.0045)# predicted 18 columns
 #plt.ylim(0.0,0.5) 
+plt.xlim(0.0025,0.006)# predicted
+plt.ylim(0.0,0.5)
 plt.show()
 
-plt.scatter(X[:,:240],X[:,240:],alpha = 0.5)
+#original values
+#plt.scatter(X[:,:10],X[:,10:],alpha = 0.5)
+
+#credit score values
+plt.scatter(X.iloc[:,:10],X.iloc[:,10:],alpha = 0.5)
+
 plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
 plt.title('Clusters k-means')
 plt.show()
 
+
+####lower bound #####
+
+#for alternatives
+dfclass.insert(dfclass.shape[1],"Pred",y_kmeans)
+
+# for feautres 
+y_k= [y_kmeans[i] if i<20 else None for i in range(0,dfclass.shape[1])]
+dfclassT = dfclass.transpose()
+dfclassT.insert(0,"Pred",y_k)
+
+dft = dfclass[dfclass["Pred"]==1].idxmin()
+indx = dft["OutRanks"]
+cined = dfclass.columns.get_loc("OverallValues")
+lower_bound = dfclass.iloc[indx,cined]
+print("Lower Bound value for cluster-->",lower_bound)
+
+#####to excel alternatives results 
+dfclass.to_excel(
+    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\KmeansAltResults.xlsx")
+
+##### to excel feautres results
+dfclass.to_excel(
+    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\KmeansFeautResults.xlsx")
+
+
+###################################################################################
+########confusion mattrix for accurancy calculation visulization###################
+from sklearn.metrics import confusion_matrix,accuracy_score
+
+#values transformation 
+true_v = [0 if x==1 else 1 for x in dfclass["Class"]]
+print("Num of Class 1 in dataset-->",480-sum(true_v),"/480")
+
+acc= accuracy_score(true_v, y_kmeans, normalize=True, sample_weight=None)
+print("Accurancy->",  acc)
+#have to input outranks and create the predicted classification from boundries
+mat = confusion_matrix(true_v ,y_kmeans,)
+sns.heatmap(mat.T, square=True, annot=True, fmt='d', cbar=False),
+           # xticklabels=dfclass.columns,
+           # yticklabels=dfclass.index)
+plt.xlabel('true label')
+plt.ylabel('predicted label')
+
+
+####spectral clustering 
+X = dfk
+from sklearn.cluster import SpectralClustering
+model = SpectralClustering(n_clusters=2, affinity='nearest_neighbors',
+                           assign_labels='kmeans')
+labels = model.fit_predict(X)
+plt.scatter(X.iloc[:, 0], X.iloc[:, 1], c=labels,
+            s=50, cmap='viridis')
+
+
+###########################################################################
+#######################Silhouette plot #####################################
+#############################################################################
 ####silhouette value for right choice of cluster number for criteria reduction 
 
 from sklearn.datasets import make_blobs 
@@ -351,13 +449,13 @@ import numpy as np
   
 X = df.transpose().values 
   
-no_of_clusters = [x for x in range(2,18)] 
+no_of_clusters = [x for x in range(2,20)] 
   
 for n_clusters in no_of_clusters: 
     
     # Create a subplot with 1 row and 2 columns
     fig, (ax1, ax2) = plt.subplots(1, 2)
-    fig.set_size_inches(18, 7)
+    fig.set_size_inches(20, 7)
 
     # The 1st subplot is the silhouette plot
     # The silhouette coefficient can range from -1, 1 but in this example all
@@ -441,12 +539,13 @@ plt.show()
 
 ###################### PCA dimension reduction for comparinson ################
 #Constructing the Co-variance matrix:
+labels=[x for x in range(0,480)]
 sample_data = df
 covar_matrix = np.matmul(sample_data.T.values , sample_data.values)
 print ( "The shape of variance matrix = ", covar_matrix.shape)
 
 from scipy.linalg import eigh
-values, vectors = eigh(covar_matrix, eigvals=(16,17))
+values, vectors = eigh(covar_matrix, eigvals=(18,19))
 print("Shape of eigen vectors = ",vectors.shape)
 # converting the eigen vectors into (2,d) shape for easyness of further computations
 vectors = vectors.T
@@ -469,13 +568,15 @@ sn.FacetGrid(dataframe, hue="label", size=6).map(plt.scatter, '1st_principal', '
 plt.show()
 
 
-
+##########plotting pca with sklearn
+sample_data = df
+labels=[x for x in range(0,20)]
 from sklearn import decomposition
 pca = decomposition.PCA()
 # configuring the parameteres
 # the number of components = 2
 pca.n_components = 2
-pca_data = pca.fit_transform(sample_data)
+pca_data = pca.fit_transform(sample_data.T)
 # pca_reduced will contain the 2-d projects of simple dat
 
 # attaching the label for each 2-d data point 
@@ -486,25 +587,3 @@ sn.FacetGrid(pca_df, hue="label", size=6).map(plt.scatter, '1st_principal', '2nd
 plt.show()
 
 
-###############################################################
-####confusion mattrix for accurancy calculation 
-from sklearn.metrics import confusion_matrix
-
-confusion_matrix()
-#have to input outranks and create the predicted classification from boundries
-mat = confusion_matrix(dfclass.values , df["Class"])
-sns.heatmap(mat.T, square=True, annot=True, fmt='d', cbar=False,
-            xticklabels=dfclass.columns,
-            yticklabels=dfclass.index)
-plt.xlabel('true label')
-plt.ylabel('predicted label')
-
-
-####spectral clustering 
-X = dfk
-from sklearn.cluster import SpectralClustering
-model = SpectralClustering(n_clusters=2, affinity='nearest_neighbors',
-                           assign_labels='kmeans')
-labels = model.fit_predict(X)
-plt.scatter(X[:, 0], X[:, 1], c=labels,
-            s=50, cmap='viridis')

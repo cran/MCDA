@@ -87,7 +87,7 @@ df= df.iloc[nr,:]
 
 # the performance table
 # removing the class column
-performanceTable = df.iloc[:,:-1]
+performanceTable = df.iloc[:,:-1] # -3
 print("\nPerformance Table \n", performanceTable)
 
 # ranks of the alternatives
@@ -221,10 +221,6 @@ outRanks.to_excel(
 # Results excel 
 # Insert to multi criteria matrix
 
-# Insert averageOverallValues as column  to Alternatives
-#df.insert(21, "AverageOverallValues", averageOverallValues.transpose())
-# Insert overallValues values as column to Alternatives
-
 df.insert(21, "OverallValues", overallValues.transpose())
 # Inert outRanks values as column to Alternatives
 df.insert(22, "OutRanks", outRanks.transpose())
@@ -235,7 +231,6 @@ y=df.columns.get_loc("Class")
 y2=df.columns.get_loc("OutRanks")
 accur = [1 for x in range(1, df.shape[0]) if (df.iloc[x,y2]<nrows/2 and df.iloc[x,y] == 1)   ]
 accur2 = [1 for x in range(1, df.shape[0]) if (df.iloc[x,y2]>nrows/2 and df.iloc[x,y]==2) ]
-#print("Accuracy", sum(accur+accur2))
 
 # Insert valueFunctions to criteria/columns
 data = [valueFunctions.iloc[x, (bpdata[x//2]-1)] for x in range(1, len(valueFunctions), 2) ]
@@ -246,11 +241,7 @@ valuefunc = data.transpose()
 #distribute overall values to all dataframe based on valueFunc
 ncols= performanceTable.shape[1]
 for i in range(0,nrows):
-    #margin = df.iloc[i,-2] / valuefunc.values /100
-    #df.replace("inf", 0 , regex=True, inplace=True)
-    df.iloc[i,0:ncols] = df.iloc[i,-2] * valuefunc.values.flatten()# margin.flatten() #
-    #df.iloc[i,0:-3] = pd.DataFrame(df.iloc[i,0:-3].dot(valuefunc.values.flatten()))
-
+    df.iloc[i,0:ncols] = df.iloc[i,-2] * valuefunc.values.flatten()
 
 #Append valuefunc row 
 df = pd.concat([valuefunc, df], ignore_index=False)

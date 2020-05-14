@@ -202,12 +202,11 @@ print("End")
 valueFunctions.to_excel(
     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\ValueFunctions.xlsx"
 )
-overallValues.to_excel(
-    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\OverallValues.xlsx"
-)
-outRanks.to_excel(
-    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\OutRanks.xlsx"
-)
+# overallValues.to_excel(
+#     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\OverallValues.xlsx"
+# )
+# outRanks.to_excel(
+#     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\OutRanks.xlsx")
 
 # averageValueFunctions.to_excel(
 #     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\AverageValueFunctions.xlsx"
@@ -224,6 +223,8 @@ outRanks.to_excel(
 df.insert(21, "OverallValues", overallValues.transpose())
 # Inert outRanks values as column to Alternatives
 df.insert(22, "OutRanks", outRanks.transpose())
+
+df = df.sort_values(by=['OutRanks'])
 
 #Accurancy true postives + false postives 
 nrows= df.shape[0]

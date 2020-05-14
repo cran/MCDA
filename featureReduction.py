@@ -313,24 +313,35 @@ t = fig.suptitle('Credit card Pairwise Plots', fontsize=14)
 ################### k means for feautre/alternatives  reduction ##############
 ########################################################################################################
 
-
 #3 Using the elbow method to find out the optimal number of #clusters. 
 #KMeans class from the sklearn library.
 from sklearn.cluster import KMeans
+from sklearn.model_selection import KFold,train_test_split,cross_val_score,cross_val_predict
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.svm import SVR
+
 
 wcss=[]
-#dfk = performanceTable.values
-dfk = df.transpose().values 
+#X = performanceTable.values
+X = df #.transpose().values 
+y=dfclass["Class"]
 
-for i in range(1,20): 
+###nromalization if needed
+#scaler = MinMaxScaler(feature_range=(0, 1))
+#X = scaler.fit_transform(X)
+
+
+
+## Kmeans cluster training / cluster finding
+for i in range(1,11): 
     kmeans = KMeans(n_clusters=i, init ='k-means++', max_iter=300,  n_init=10,random_state=0 )
 
-    kmeans.fit(dfk)
+    kmeans.fit(X)
 
     wcss.append(kmeans.inertia_)
 #kmeans inertia_ attribute is:  Sum of squared distances of samples #to their closest cluster center.
 #4.Plot the elbow graph
-plt.plot(range(1,20),wcss)
+plt.plot(range(1,11),wcss)
 plt.title('The Elbow Method Graph')
 plt.xlabel('Number of clusters')
 plt.ylabel('WCSS')
@@ -339,14 +350,26 @@ plt.show()
 
 #5 According to the Elbow graph we deterrmine the clusters number as #5. Applying k-means algorithm to the X dataset.
 kmeans = KMeans(n_clusters=2, init ='k-means++', max_iter=300, n_init=10,random_state=0 )
+y_kmeans = kmeans.fit(X)
 
 # We are going to use the fit predict method that returns for each #observation which cluster it belongs to. 
 # The cluster to which #it belongs and it will return this cluster numbers into a 
 # # single vector that is  called y K-means
-X = dfk
+#Predicted values
 y_kmeans = kmeans.fit_predict(X)
 
+##kmeans score?
+kmeans.score(X)
+
+####k-fold cross validation score 
+scores = cross_val_score(kmeans, X, y, cv=5)
+print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+scores = cross_val_predict(kmeans, X, y, cv=5)
+print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
 #6 Visualising the clusters based on prediction 
+
 #original values 
 #plt.scatter(X[y_kmeans==0, 0], X[y_kmeans==0, 1], s=10, c='red', label ='Cluster 1' )
 #plt.scatter(X[y_kmeans==1, 0], X[y_kmeans==1, 1], s=10, c='blue', label ='Cluster 2')
@@ -362,7 +385,7 @@ plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=1
 plt.title('Clusters k-means')
 #plt.xlim(0.0025,0.0045)# predicted 18 columns
 #plt.ylim(0.0,0.5) 
-plt.xlim(0.0025,0.006)# predicted
+plt.xlim(0.0025,0.006)# predicted 20 columns
 plt.ylim(0.0,0.5)
 plt.show()
 
@@ -382,11 +405,6 @@ plt.show()
 #for alternatives
 dfclass.insert(dfclass.shape[1],"Pred",y_kmeans)
 
-# for feautres 
-y_k= [y_kmeans[i] if i<20 else None for i in range(0,dfclass.shape[1])]
-dfclassT = dfclass.transpose()
-dfclassT.insert(0,"Pred",y_k)
-
 dft = dfclass[dfclass["Pred"]==1].idxmin()
 indx = dft["OutRanks"]
 cined = dfclass.columns.get_loc("OverallValues")
@@ -397,9 +415,25 @@ print("Lower Bound value for cluster-->",lower_bound)
 dfclass.to_excel(
     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\KmeansAltResults.xlsx")
 
+
+
+##### for feautres 
+dfclassT = dfclass.transpose()
+dfclassT = dfclassT.iloc[:,:0]
+for i in range(2,df.shape[1]):
+    kmeans = KMeans(n_clusters=i, init ='k-means++', max_iter=300, n_init=10,random_state=0 )
+    y_kmeans = kmeans.fit_predict(X)
+    y_k= [y_kmeans[i] if i<20 else None for i in range(0,dfclass.shape[1])]
+    
+    dfclassT.insert(i-2,"Pred"+str(i),y_k)
+    dfclassT = dfclassT.sort_values(by=['Pred'+str(i)],ascending=True)
+
 ##### to excel feautres results
-dfclass.to_excel(
+dfclassT.to_excel(
     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\KmeansFeautResults.xlsx")
+
+
+
 
 
 ###################################################################################
@@ -422,7 +456,7 @@ plt.ylabel('predicted label')
 
 
 ####spectral clustering 
-X = dfk
+X = df
 from sklearn.cluster import SpectralClustering
 model = SpectralClustering(n_clusters=2, affinity='nearest_neighbors',
                            assign_labels='kmeans')

@@ -4,6 +4,7 @@ import sys
 sys.path.append("E:/Google Drive/PC SHIT/HMMY/Diplomatiki/methods/MCDA")
 from  Pyth.UTASTAR import *
 
+
 # UTASTAR EXAMPLE
 # the separation threshold
 
@@ -85,6 +86,7 @@ df = df.apply(pd.to_numeric)
 nr= [x for x in range(480)]
 df= df.iloc[nr,:]
 
+dfutadis = df
 # the performance table
 # removing the class column
 performanceTable = df.iloc[:,:-1] # -3
@@ -200,21 +202,8 @@ print("End")
 
 #Output to excel 
 valueFunctions.to_excel(
-    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\ValueFunctions.xlsx"
+    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\UtastarValueFunctions.xlsx"
 )
-# overallValues.to_excel(
-#     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\OverallValues.xlsx"
-# )
-# outRanks.to_excel(
-#     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\OutRanks.xlsx")
-
-# averageValueFunctions.to_excel(
-#     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\AverageValueFunctions.xlsx"
-# )
-# averageOverallValues.to_excel(
-#     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\AverageOverallValues.xlsx"
-# )
-
 
 
 # Results excel 
@@ -250,8 +239,100 @@ df = pd.concat([valuefunc, df], ignore_index=False)
 
 print(df)
 df.to_excel(
-    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\Results.xlsx"
+    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\UtastarResults.xlsx"
 )
 
 print("Accuracy", sum(accur+accur2)/nrows)
 
+
+##################### UTADIS CREDIT SCORE #########################
+  
+from Pyth.UTADIS import *
+
+
+alternativesAssignments = alternativesRanks
+categoriesRanks= pd.DataFrame([[1,2]], columns=[1, 2])
+
+
+(
+    optimum,
+    valueFunctions,
+    overallValues,
+    categoriesLBs,
+    errorValuesPlus,
+    errorValuesMinus,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+    averageOverallValues,
+) = UTADIS(
+    performanceTable,
+    criteriaMinMax,
+    criteriaNumberOfBreakPoints,
+    alternativesAssignments,
+    categoriesRanks,
+    0.1,
+)
+
+print("X=")
+print(
+    optimum,
+    valueFunctions,
+    overallValues,
+    categoriesLBs,
+    errorValuesPlus,
+    errorValuesMinus,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+    averageOverallValues,
+    sep="\n",
+)
+
+
+#Output to excel 
+valueFunctions.to_excel(
+    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\UtadisValueFunctions.xlsx"
+)
+
+
+
+
+# Results excel 
+# Insert to multi criteria matrix
+
+dfutadis.insert(21, "OverallValues", overallValues.transpose())
+# Inert outRanks values as column to Alternatives
+dfutadis.insert(22, "OutRanks", outRanks.transpose())
+
+dfutadis = dfutadis.sort_values(by=['OutRanks'])
+
+#Accurancy true postives + false postives 
+nrows= dfutadis.shape[0]
+y=dfutadis.columns.get_loc("Class")
+y2=dfutadis.columns.get_loc("OutRanks")
+accur = [1 for x in range(1, dfutadis.shape[0]) if (dfutadis.iloc[x,y2]<nrows/2 and dfutadis.iloc[x,y] == 1)   ]
+accur2 = [1 for x in range(1, dfutadis.shape[0]) if (dfutadis.iloc[x,y2]>nrows/2 and dfutadis.iloc[x,y]==2) ]
+
+# Insert valueFunctions to criteria/columns
+data = [valueFunctions.iloc[x, (bpdata[x//2]-1)] for x in range(1, len(valueFunctions), 2) ]
+data = pd.DataFrame(data, index=performanceTable.columns.values, columns=["ValueFunc"])
+valuefunc = data.transpose()
+
+# TODO Replace -3 and -2 with more adjustable code 
+#distribute overall values to all dataframe based on valueFunc
+ncols= performanceTable.shape[1]
+for i in range(0,nrows):
+    dfutadis.iloc[i,0:ncols] = dfutadis.iloc[i,-2] * valuefunc.values.flatten()
+
+#Append valuefunc row 
+dfutadis = pd.concat([valuefunc, dfutadis], ignore_index=False)
+
+
+print(dfutadis)
+dfutadis.to_excel(
+    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\UtadisResults.xlsx"
+)
+
+print("Accuracy", sum(accur+accur2)/nrows)
+print("Lower Bound-->",categoriesLBs.values.flatten())

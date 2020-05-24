@@ -8,7 +8,7 @@ from  Pyth.UTASTAR import *
 # UTASTAR EXAMPLE
 # the separation threshold
 
-epsilon = 0.05
+epsilon = 0.1
 
 ### German Credit Card Approval Dataset
 # Use Utastar to create Credit Score
@@ -86,7 +86,7 @@ df = df.apply(pd.to_numeric)
 nr= [x for x in range(480)]
 df= df.iloc[nr,:]
 
-dfutadis = df
+
 # the performance table
 # removing the class column
 performanceTable = df.iloc[:,:-1] # -3
@@ -271,10 +271,9 @@ categoriesRanks= pd.DataFrame([[1,2]], columns=[1, 2])
     criteriaNumberOfBreakPoints,
     alternativesAssignments,
     categoriesRanks,
-    0.1,
+    epsilon, #0.1
 )
 
-print("X=")
 print(
     optimum,
     valueFunctions,
@@ -290,29 +289,28 @@ print(
 )
 
 
+
+dfutadis = df.iloc[1:,:-2]
+
 #Output to excel 
 valueFunctions.to_excel(
     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\UtadisValueFunctions.xlsx"
 )
-
-
-
 
 # Results excel 
 # Insert to multi criteria matrix
 
 dfutadis.insert(21, "OverallValues", overallValues.transpose())
 # Inert outRanks values as column to Alternatives
-dfutadis.insert(22, "OutRanks", outRanks.transpose())
 
-dfutadis = dfutadis.sort_values(by=['OutRanks'])
+dfutadis = dfutadis.sort_values(by=['OverallValues'] , ascending=False)
 
 #Accurancy true postives + false postives 
 nrows= dfutadis.shape[0]
 y=dfutadis.columns.get_loc("Class")
-y2=dfutadis.columns.get_loc("OutRanks")
-accur = [1 for x in range(1, dfutadis.shape[0]) if (dfutadis.iloc[x,y2]<nrows/2 and dfutadis.iloc[x,y] == 1)   ]
-accur2 = [1 for x in range(1, dfutadis.shape[0]) if (dfutadis.iloc[x,y2]>nrows/2 and dfutadis.iloc[x,y]==2) ]
+y2=dfutadis.columns.get_loc("OverallValues")
+accur = [1 for x in range(1, dfutadis.shape[0]) if (dfutadis.iloc[x,y2]<categoriesLBs[1].values and dfutadis.iloc[x,y] == 1)   ]
+accur2 = [1 for x in range(1, dfutadis.shape[0]) if (dfutadis.iloc[x,y2]>categoriesLBs[1].values and dfutadis.iloc[x,y]==2) ]
 
 # Insert valueFunctions to criteria/columns
 data = [valueFunctions.iloc[x, (bpdata[x//2]-1)] for x in range(1, len(valueFunctions), 2) ]

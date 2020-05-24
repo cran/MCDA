@@ -70,7 +70,6 @@ df = df.apply(pd.to_numeric)
 
 nr= [x for x in range(480)]
 df= df.iloc[nr,:]
-
 # the performance table
 # removing the class column
 performanceTable = df.iloc[:,:-1]# -3 adjusted for removed columns 
@@ -79,8 +78,9 @@ performanceTable = df.iloc[:,:-1]# -3 adjusted for removed columns
 
 #import Credit score resutls
 df = pd.read_excel(
-    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\Results.xlsx",
+    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\UtastarResults.xlsx",
 )
+dfval = df
 dfclass = df.iloc[1:,1:] #-2
 #dfclass = dfclass.drop(["telephone"],axis=1)
 #dfclass = dfclass.drop(["foreign"],axis=1)
@@ -89,9 +89,28 @@ dfclass = dfclass.reset_index(drop=True)
 df = df.iloc[1:,1:-3]## adjusted for removed columns
 df = df.reset_index(drop=True)
 
+dfall=df
 
 
 
+
+###########feautre reduction##############
+dfval=dfval.iloc[0,1:-3]
+dfval= pd.DataFrame(dfval)
+
+dfval = dfval.sort_values( by=[0], ascending=False)
+
+
+for x in range(0,len(dfval)):
+    dfvalt = dfval.iloc[:-x,:]
+    if  sum(dfvalt.values)>0.89 and sum(dfvalt.values)<0.92 :
+        dfval = dfval.iloc[:-x,:]
+        
+
+print(sum(dfval.values))
+print(dfval)
+
+df=df[dfval.index]
 
 #########################################################################################################
 ################### k means for feautre/alternatives  reduction ##############
@@ -104,10 +123,11 @@ from sklearn.model_selection import KFold,train_test_split,cross_val_score,cross
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVR
 
+Y=df
 
 wcss=[]
 #X = performanceTable.values
-X = df #.transpose().values 
+X = df.iloc[:240,:] #.transpose().values 
 y=dfclass["Class"]
 
 ###nromalization if needed
@@ -146,10 +166,10 @@ y_kmeans = kmeans.fit_predict(X)
 kmeans.score(X)
 
 ####k-fold cross validation score 
-scores = cross_val_score(kmeans, X, y, cv=5)
+scores = cross_val_score(kmeans, X, y[:240], cv=5)
 print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
-scores = cross_val_predict(kmeans, X, y, cv=5)
+scores = cross_val_predict(kmeans, X, y[:240], cv=5)
 print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
 #6 Visualising the clusters based on prediction 
@@ -167,10 +187,10 @@ plt.scatter(X.iloc[y_kmeans==1, 0], X.iloc[y_kmeans==1, 1], s=10, c='blue', labe
 # attribute that returns here the coordinates of the centroid.
 plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
 plt.title('Clusters k-means')
-#plt.xlim(0.0025,0.0045)# predicted 18 columns
-#plt.ylim(0.0,0.5) 
-plt.xlim(0.0025,0.006)# predicted 20 columns
-plt.ylim(0.0,0.5)
+plt.xlim(0.0066,0.0075)# epsilon not
+plt.ylim(0.05,0.23) 
+#plt.xlim(0.0025,0.006)# predicted 20 columns
+#plt.ylim(0.0,0.5)
 plt.show()
 
 #original values
@@ -183,13 +203,56 @@ plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=1
 plt.title('Clusters k-means')
 plt.show()
 
+############### all data set########
+
+y_kmeans = kmeans.fit(Y)
+y_kmeans = kmeans.fit_predict(Y)
+
+
+####k-fold cross validation score 
+scores = cross_val_score(kmeans, Y, y, cv=5)
+print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+scores = cross_val_predict(kmeans, Y, y, cv=5)
+print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+#6 Visualising the clusters based on prediction 
+
+#original values 
+#plt.scatter(X[y_kmeans==0, 0], X[y_kmeans==0, 1], s=10, c='red', label ='Cluster 1' )
+#plt.scatter(X[y_kmeans==1, 0], X[y_kmeans==1, 1], s=10, c='blue', label ='Cluster 2')
+
+#credit score values
+plt.scatter(Y.iloc[y_kmeans==0, 0], Y.iloc[y_kmeans==0, 1], s=10, c='red', label ='Cluster 1' )
+plt.scatter(Y.iloc[y_kmeans==1, 0], Y.iloc[y_kmeans==1, 1], s=10, c='blue', label ='Cluster 2')
+
+#visual based on actual values values 
+#Plot the centroid. This time we're going to use the cluster centres  
+# attribute that returns here the coordinates of the centroid.
+plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
+plt.title('Clusters k-means')
+#plt.xlim(0.0025,0.0045)# predicted 18 columns
+#plt.ylim(0.0,0.5) 
+plt.xlim(0.0040,0.0075)# predicted 20 columns
+plt.ylim(0.0,0.5)
+plt.show()
+
+#original values
+#plt.scatter(X[:,:10],X[:,10:],alpha = 0.5)
+
+#credit score values
+plt.scatter(Y.iloc[:,:10],Y.iloc[:,10:],alpha = 0.5)
+
+plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
+plt.title('Clusters k-means')
+plt.show()
 
 ####lower bound #####
 
 #for alternatives
 dfclass.insert(dfclass.shape[1],"Pred",y_kmeans)
 
-dft = dfclass[dfclass["Pred"]==1].idxmin()
+dft = dfclass[dfclass["Pred"]==1].idxmax() # or min  check data 
 indx = dft["OutRanks"]
 cined = dfclass.columns.get_loc("OverallValues")
 lower_bound = dfclass.iloc[indx,cined]
@@ -201,7 +264,7 @@ dfclass.to_excel(
 
 
 
-##### for feautres 
+##### for feautres #############
 dfclassT = dfclass.transpose()
 dfclassT = dfclassT.iloc[:,:0]
 for i in range(2,df.shape[1]):

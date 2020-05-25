@@ -85,6 +85,11 @@ df = df.apply(pd.to_numeric)
 
 nr= [x for x in range(480)]
 df= df.iloc[nr,:]
+df = df.drop(["telephone"],axis=1)
+df = df.drop(["foreign"],axis=1)
+df = df.drop(["providor_num"],axis=1)
+
+
 
 
 # the performance table
@@ -111,7 +116,7 @@ minmaxdata = [random.choice(choices) for i in range(df.shape[1]-1)]
  """
 
 #minmaxdata = ['max' for i in range(20)]
-minmaxdata = ["max","min","max","min", "max","max","max","max", "max","max","min","max",  "min","min","max","max", "max","min","max","min"]
+minmaxdata = ["max","min","max","min", "max","max","max","max", "max","max","min","max",  "min","min","max","max", "max"]#,"min","max","min"]
 
 #minmaxdata = ['min','min','max','max','min','min','max','min','min','max','min','max','max','max','max','max','max','min','max','min']
 
@@ -121,7 +126,7 @@ print("\nCriteria Min Max \n", criteriaMinMax,)
 
 
 #bpdata = [4, 3, 3, 4, 4 , 4, 3, 4, 2, 3, 3, 3, 4, 4, 3, 2, 4, 4, 3, 3]
-bpdata = [3,4,3,3, 3,3,3,4, 3,3,3,3, 4,3,3,3, 3,2,2,2]
+bpdata = [3,4,3,3, 3,3,3,4, 3,3,3,3, 4,3,3,3, 3]#,2,2,2]
 #bpdata = [3 for i in range(20)]
 
 #choices = [2,3,4]
@@ -202,16 +207,16 @@ print("End")
 
 #Output to excel 
 valueFunctions.to_excel(
-    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\UtastarValueFunctions.xlsx"
+    r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\UtastarValueFunctions.xlsx"
 )
 
 
 # Results excel 
 # Insert to multi criteria matrix
 
-df.insert(21, "OverallValues", overallValues.transpose())
+df.insert(18, "OverallValues", overallValues.transpose())
 # Inert outRanks values as column to Alternatives
-df.insert(22, "OutRanks", outRanks.transpose())
+df.insert(19, "OutRanks", outRanks.transpose())
 
 df = df.sort_values(by=['OutRanks'])
 
@@ -289,7 +294,7 @@ print(
 )
 
 
-
+df[performanceTable.columns.values] =performanceTable
 dfutadis = df.iloc[1:,:-2]
 
 #Output to excel 
@@ -300,7 +305,7 @@ valueFunctions.to_excel(
 # Results excel 
 # Insert to multi criteria matrix
 
-dfutadis.insert(21, "OverallValues", overallValues.transpose())
+dfutadis.insert(18, "OverallValues", overallValues.transpose())
 # Inert outRanks values as column to Alternatives
 
 dfutadis = dfutadis.sort_values(by=['OverallValues'] , ascending=False)
@@ -321,7 +326,7 @@ valuefunc = data.transpose()
 #distribute overall values to all dataframe based on valueFunc
 ncols= performanceTable.shape[1]
 for i in range(0,nrows):
-    dfutadis.iloc[i,0:ncols] = dfutadis.iloc[i,-2] * valuefunc.values.flatten()
+    dfutadis.iloc[i,:ncols] = dfutadis.iloc[i,-1] * valuefunc.values.flatten()
 
 #Append valuefunc row 
 dfutadis = pd.concat([valuefunc, dfutadis], ignore_index=False)
@@ -332,5 +337,5 @@ dfutadis.to_excel(
     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\UtadisResults.xlsx"
 )
 
-print("Accuracy", sum(accur+accur2)/nrows)
+print("Accuracy",1 -sum(accur+accur2)/nrows)
 print("Lower Bound-->",categoriesLBs.values.flatten())

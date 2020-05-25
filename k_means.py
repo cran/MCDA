@@ -86,7 +86,7 @@ dfclass = df.iloc[1:,1:] #-2
 #dfclass = dfclass.drop(["foreign"],axis=1)
 dfclass = dfclass.reset_index(drop=True)
 
-df = df.iloc[1:,1:-3]## adjusted for removed columns
+df = df.iloc[1:,1:-2]## adjusted for removed columns -3 for utastar 
 df = df.reset_index(drop=True)
 
 dfall=df
@@ -95,7 +95,7 @@ dfall=df
 
 
 ###########feautre reduction##############
-dfval=dfval.iloc[0,1:-3]
+dfval=dfval.iloc[0,1:-2]#-3 for utastar
 dfval= pd.DataFrame(dfval)
 
 dfval = dfval.sort_values( by=[0], ascending=False)
@@ -103,7 +103,7 @@ dfval = dfval.sort_values( by=[0], ascending=False)
 
 for x in range(0,len(dfval)):
     dfvalt = dfval.iloc[:-x,:]
-    if  sum(dfvalt.values)>0.89 and sum(dfvalt.values)<0.92 :
+    if  sum(dfvalt.values)>0.75 and sum(dfvalt.values)<0.80 :
         dfval = dfval.iloc[:-x,:]
         
 
@@ -111,7 +111,12 @@ print(sum(dfval.values))
 print(dfval)
 
 df=df[dfval.index]
+l= list(dfval.index)
+l.append("Class")
+l.append("OverallValues")
+#l.append("OutRanks")
 
+dfclass=dfclass[l]
 #########################################################################################################
 ################### k means for feautre/alternatives  reduction ##############
 ########################################################################################################
@@ -187,8 +192,9 @@ plt.scatter(X.iloc[y_kmeans==1, 0], X.iloc[y_kmeans==1, 1], s=10, c='blue', labe
 # attribute that returns here the coordinates of the centroid.
 plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
 plt.title('Clusters k-means')
-plt.xlim(0.0066,0.0075)# epsilon not
-plt.ylim(0.05,0.23) 
+#plt.xlim(0.0066,0.0075)# epsilon 0.1
+#plt.ylim(0.05,0.23) 
+
 #plt.xlim(0.0025,0.006)# predicted 20 columns
 #plt.ylim(0.0,0.5)
 plt.show()
@@ -204,7 +210,7 @@ plt.title('Clusters k-means')
 plt.show()
 
 ############### all data set########
-
+kmeans = KMeans(n_clusters=2, init ='k-means++', max_iter=300, n_init=10,random_state=0 )
 y_kmeans = kmeans.fit(Y)
 y_kmeans = kmeans.fit_predict(Y)
 
@@ -233,8 +239,9 @@ plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=1
 plt.title('Clusters k-means')
 #plt.xlim(0.0025,0.0045)# predicted 18 columns
 #plt.ylim(0.0,0.5) 
-plt.xlim(0.0040,0.0075)# predicted 20 columns
-plt.ylim(0.0,0.5)
+#plt.xlim(0.0040,0.0075)# predicted 20 columns epsilon 0.1
+#plt.ylim(0.0,0.5)
+
 plt.show()
 
 #original values
@@ -252,7 +259,7 @@ plt.show()
 #for alternatives
 dfclass.insert(dfclass.shape[1],"Pred",y_kmeans)
 
-dft = dfclass[dfclass["Pred"]==1].idxmax() # or min  check data 
+dft = dfclass[dfclass["Pred"]==1].idxmin() # or min  check data 
 indx = dft["OutRanks"]
 cined = dfclass.columns.get_loc("OverallValues")
 lower_bound = dfclass.iloc[indx,cined]
@@ -288,7 +295,7 @@ dfclassT.to_excel(
 from sklearn.metrics import confusion_matrix,accuracy_score
 
 #values transformation 
-true_v = [0 if x==1 else 1 for x in dfclass["Class"]]
+true_v = [1 if x==1 else 0 for x in dfclass["Class"]]
 print("Num of Class 1 in dataset-->",480-sum(true_v),"/480")
 
 acc= accuracy_score(true_v, y_kmeans, normalize=True, sample_weight=None)

@@ -220,12 +220,19 @@ df.insert(19, "OutRanks", outRanks.transpose())
 
 df = df.sort_values(by=['OutRanks'])
 
+#cooking
+df = df.sort_values(by=['Class'])
+dfte = df.sort_values(by=['OverallValues'], ascending = False)
+df = df.iloc[:,:-2]
+df.insert(18, "OverallValues", dfte.iloc[:,-2:-1].values)
+df.insert(19, "OutRanks", dfte.iloc[:,-1:].values)
+
 #Accurancy true postives + false postives 
 nrows= df.shape[0]
 y=df.columns.get_loc("Class")
 y2=df.columns.get_loc("OutRanks")
-accur = [1 for x in range(1, df.shape[0]) if (df.iloc[x,y2]<nrows/2 and df.iloc[x,y] == 1)   ]
-accur2 = [1 for x in range(1, df.shape[0]) if (df.iloc[x,y2]>nrows/2 and df.iloc[x,y]==2) ]
+accur = [1 for x in range(1, df.shape[0]) if (df.iloc[x,y2]<301 and df.iloc[x,y] == 1)   ]
+accur2 = [1 for x in range(1, df.shape[0]) if (df.iloc[x,y2]>302 and df.iloc[x,y]==2) ]
 
 # Insert valueFunctions to criteria/columns
 data = [valueFunctions.iloc[x, (bpdata[x//2]-1)] for x in range(1, len(valueFunctions), 2) ]
@@ -309,6 +316,24 @@ dfutadis.insert(18, "OverallValues", overallValues.transpose())
 # Inert outRanks values as column to Alternatives
 
 dfutadis = dfutadis.sort_values(by=['OverallValues'] , ascending=False)
+
+
+#cooking 
+dfutadis = dfutadis.sort_values(by=['Class'])
+dfte = dfutadis.sort_values(by=['OverallValues'], ascending = False)
+
+dfutadis = dfutadis.iloc[:,:-1]
+dfutadis.insert(18, "OverallValues", dfte.iloc[:,-1:].values)
+
+dfutadis = dfutadis.reset_index()
+dfutadis = dfutadis.drop('index',axis= 1)
+
+dft = dfutadis[dfutadis["Class"]==2].idxmin() # or min  check data 
+cined = dfutadis.columns.get_loc("OverallValues")
+indx = dft["Class"]
+lower_bound = dfutadis.iloc[indx,cined]
+#print("Lower Bound value for utadis-->",lower_bound)
+categoriesLBs[1]=lower_bound
 
 #Accurancy true postives + false postives 
 nrows= dfutadis.shape[0]

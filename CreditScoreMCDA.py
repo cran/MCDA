@@ -379,7 +379,25 @@ weights = utastarvaluefun
 weights = pd.DataFrame(weights)
 
 overall1 = TOPSIS(performanceTable, weights, criteriaMinMax)
+overall1 = overall1.transpose()
 print(overall1)
+
+classdf=df.iloc[1:,:-2]
+y=classdf.columns.get_loc("Class")
+
+overall1.insert(1,"Class",classdf.iloc[:,y])
+
+overall1 = overall1.sort_values(by=['Solution'] , ascending=False)
+overall1 = overall1.reset_index()
+#overall1 = overall1.drop("index")
+
+accur = [1 for x in range(1, overall1.shape[0]) if (x<302 and overall1.iloc[x,2] == 1)   ]
+accur2 = [1 for x in range(1, overall1.shape[0]) if (x>301 and overall1.iloc[x,2]==2) ]
+
+print("Accuracy",sum(accur+accur2)/nrows)
+
+
+overall1.to_excel(r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\TOPSISResults.xlsx")
 
 # TOPSIS with UTADIS weights
 weights = utadisvaluefunc
@@ -387,4 +405,22 @@ weights = pd.DataFrame(weights)
 
 
 overall2 = TOPSIS(performanceTable, weights, criteriaMinMax)
+overall2 = overall2.transpose()
+
 print(overall2)
+
+
+
+classdf=df.iloc[1:,:-2]
+y=classdf.columns.get_loc("Class")
+
+overall2.insert(1,"Class",classdf.iloc[:,y])
+
+overall2 = overall2.sort_values(by=['Solution'] , ascending=False)
+overall2 = overall2.reset_index()
+#overall1 = overall1.drop("index")
+
+accur = [1 for x in range(1, overall2.shape[0]) if (x<302 and overall2.iloc[x,2] == 1)   ]
+accur2 = [1 for x in range(1, overall2.shape[0]) if (x>301 and overall2.iloc[x,2]==2) ]
+
+print("Accuracy",sum(accur+accur2)/nrows)

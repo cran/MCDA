@@ -364,3 +364,27 @@ dfutadis.to_excel(
 
 print("Accuracy",1 -sum(accur+accur2)/nrows)
 print("Lower Bound-->",categoriesLBs.values.flatten())
+
+#alternativesAssignments = alternativesRanks
+#categoriesRanks= pd.DataFrame([[1,2]], columns=[1, 2])
+
+
+########### TOPSIS #################
+from Pyth.TOPSIS import *
+
+## This test example is the same as http://hodgett.co.uk/topsis-in-excel/
+
+# TOPSIS with UTASTAR weights
+weights = utastarvaluefun
+weights = pd.DataFrame(weights)
+
+overall1 = TOPSIS(performanceTable, weights, criteriaMinMax)
+print(overall1)
+
+# TOPSIS with UTADIS weights
+weights = utadisvaluefunc
+weights = pd.DataFrame(weights)
+
+
+overall2 = TOPSIS(performanceTable, weights, criteriaMinMax)
+print(overall2)

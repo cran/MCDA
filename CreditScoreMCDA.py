@@ -248,6 +248,7 @@ for i in range(0,nrows):
 #Append valuefunc row 
 df = pd.concat([valuefunc, df], ignore_index=False)
 
+utastarvaluefun=valuefunc
 
 print(df)
 df.to_excel(
@@ -356,6 +357,7 @@ for i in range(0,nrows):
 #Append valuefunc row 
 dfutadis = pd.concat([valuefunc, dfutadis], ignore_index=False)
 
+utadisvaluefunc = valuefunc
 
 print(dfutadis)
 dfutadis.to_excel(
@@ -396,15 +398,25 @@ accur2 = [1 for x in range(1, overall1.shape[0]) if (x>301 and overall1.iloc[x,2
 
 print("Accuracy",sum(accur+accur2)/nrows)
 
+ncols= performanceTable.shape[1]
 
-overall1.to_excel(r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\TOPSISResults.xlsx")
+topsisdf  = performanceTable
+
+for i in range(0,nrows):
+    topsisdf.iloc[i,:ncols] = overall1.iloc[i,1] * weights.values.flatten()
+
+topsisdf.insert(17,"Solution",overall1.iloc[:,1])
+topsisdf.insert(18,"Class",overall1.iloc[:,2])
+#print(topsisdf)
+
+topsisdf.to_excel(r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\TOPSISUtastarResults.xlsx")
 
 # TOPSIS with UTADIS weights
 weights = utadisvaluefunc
 weights = pd.DataFrame(weights)
 
 
-overall2 = TOPSIS(performanceTable, weights, criteriaMinMax)
+overall2 = TOPSIS(performanceTable.iloc[:,0:-2], weights, criteriaMinMax)
 overall2 = overall2.transpose()
 
 print(overall2)
@@ -424,3 +436,18 @@ accur = [1 for x in range(1, overall2.shape[0]) if (x<302 and overall2.iloc[x,2]
 accur2 = [1 for x in range(1, overall2.shape[0]) if (x>301 and overall2.iloc[x,2]==2) ]
 
 print("Accuracy",sum(accur+accur2)/nrows)
+
+
+ncols= performanceTable.shape[1]
+
+topsisdf2  = performanceTable.iloc[:,0:-2]
+
+for i in range(0,nrows):
+    topsisdf2.iloc[i,:ncols] = overall2.iloc[i,1] * weights.values.flatten()
+
+topsisdf2.insert(17,"Solution",overall2.iloc[:,1])
+topsisdf2.insert(18,"Class",overall2.iloc[:,2])
+#print(topsisdf)
+
+topsisdf2.to_excel(r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\TOPSISUtadisResults.xlsx")
+

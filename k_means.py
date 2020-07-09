@@ -9,9 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np 
 from matplotlib.image import imread
 import seaborn as sns
-from sklearn.datasets.samples_generator import (make_blobs,
-                                                make_circles,
-                                                make_moons)
+from sklearn.datasets.samples_generator import (make_blobs,make_circles,make_moons)
 from sklearn.cluster import KMeans, SpectralClustering
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import silhouette_samples, silhouette_score
@@ -34,6 +32,7 @@ df = pd.read_excel(
 df.columns = df.iloc[0]
 
 # Remove junk row,column
+
 df = df.iloc[1:, 1:]
 
 df["purpose"].replace("Α40 ", "11", regex=True, inplace=True)
@@ -76,34 +75,41 @@ performanceTable = df.iloc[:,:-1]# -3 adjusted for removed columns
 #print("\nPerformance Table \n", performanceTable)
 
 
+
+#import Credit score resutls
+df = pd.read_excel(r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\UtadisResults.xlsx",)
+
 #import Credit score resutls
 df = pd.read_excel(
     r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\UtastarResults.xlsx",
 )
+
+dftopsis = pd.read_excel(r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\TOPSISUtastarResults.xlsx")
+
+dftopsis = pd.read_excel(r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\TOPSISUtadisResults.xlsx")
+
+
 dfval = df
 dfclass = df.iloc[1:,1:] #-2
 #dfclass = dfclass.drop(["telephone"],axis=1)
 #dfclass = dfclass.drop(["foreign"],axis=1)
 dfclass = dfclass.reset_index(drop=True)
 
-df = df.iloc[1:,1:-2]## adjusted for removed columns -3 for utastar 
+df = df.iloc[1:,1:-2]## adjusted for removed columns -3 for utastar -2 for utadis
+
 df = df.reset_index(drop=True)
-
-dfall=df
-
 
 
 
 ###########feautre reduction##############
-dfval=dfval.iloc[0,1:-2]#-3 for utastar
+dfval=dfval.iloc[0,1:-2]#-3 for utastar -2 for utadis
 dfval= pd.DataFrame(dfval)
-
 dfval = dfval.sort_values( by=[0], ascending=False)
 
 
 for x in range(0,len(dfval)):
     dfvalt = dfval.iloc[:-x,:]
-    if  sum(dfvalt.values)>0.75 and sum(dfvalt.values)<0.80 :
+    if  sum(dfvalt.values)>0.82 and sum(dfvalt.values)<0.92 : # was 82 and 92 utastar/ 0 and 0.25 utadis
         dfval = dfval.iloc[:-x,:]
         
 
@@ -117,6 +123,14 @@ l.append("OverallValues")
 #l.append("OutRanks")
 
 dfclass=dfclass[l]
+
+#topsis implementation 
+df=dftopsis[df.columns.values]
+
+dfclass["OverallValues"]= dftopsis["Solution"]
+dfclass=dfclass.iloc[:,:-1]
+#dfclass["Class"]=dftopsis["Class"]
+
 #########################################################################################################
 ################### k means for feautre/alternatives  reduction ##############
 ########################################################################################################
@@ -127,6 +141,7 @@ from sklearn.cluster import KMeans
 from sklearn.model_selection import KFold,train_test_split,cross_val_score,cross_val_predict
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVR
+
 
 Y=df
 
@@ -259,8 +274,9 @@ plt.show()
 #for alternatives
 dfclass.insert(dfclass.shape[1],"Pred",y_kmeans)
 
-dft = dfclass[dfclass["Pred"]==1].idxmin() # or min  check data 
-indx = dft["OutRanks"]
+dft = dfclass[dfclass["Pred"]==0].idxmax() # or min  check data 
+#indx = dft["OutRanks"] # for utastar 
+indx = dft["Pred"] # for utadis
 cined = dfclass.columns.get_loc("OverallValues")
 lower_bound = dfclass.iloc[indx,cined]
 print("Lower Bound value for cluster-->",lower_bound)
@@ -295,8 +311,11 @@ dfclassT.to_excel(
 from sklearn.metrics import confusion_matrix,accuracy_score
 
 #values transformation 
-true_v = [1 if x==1 else 0 for x in dfclass["Class"]]
+true_v = [0 if x==1 else 1 for x in dfclass["Class"]]
 print("Num of Class 1 in dataset-->",480-sum(true_v),"/480")
+
+true_v = [0 if x<301 else 1 for x in range(0,479)]
+y_kmeans =  [0 if x<230 else 1 for x in range(0,479)]
 
 acc= accuracy_score(true_v, y_kmeans, normalize=True, sample_weight=None)
 print("Accurancy->",  acc)

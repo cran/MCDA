@@ -451,3 +451,134 @@ topsisdf2.insert(18,"Class",overall2.iloc[:,2])
 
 topsisdf2.to_excel(r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\TOPSISUtadisResults.xlsx")
 
+
+
+
+#Taiwan dataset 
+
+df = pd.read_excel(
+    r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\Taiwan Dataset\default of credit card clients.xls",
+    sheet_name="Data",
+    #sheet_name="multimatrix",
+)
+
+#pre prossesing 
+
+df.columns =  df.iloc[2].values
+
+# Set index name
+df.columns.name = "Alternatives"
+
+
+# Reset index
+df = df.reset_index(drop=True)
+
+# Convert all dataframe values to integer
+df = df.apply(pd.to_numeric)
+
+#Visualization 
+
+df = df.drop(["ID"],axis=1)
+
+# Change qualitative values to quantitative
+
+df["EDUCATION"].replace("5", "0", regex=True, inplace=True)
+df["EDUCATION"].replace("6", "0", regex=True, inplace=True)
+df["EDUCATION"].replace("4", "0", regex=True, inplace=True)
+df["EDUCATION"].replace("2", "4", regex=True, inplace=True)
+df["EDUCATION"].replace("3", "2", regex=True, inplace=True)
+df["EDUCATION"].replace("4", "3", regex=True, inplace=True)
+
+df["MARRIAGE"].replace("0", "3", regex=True, inplace=True)
+
+
+df["PAY_0"].replace("-2", "0", regex=True, inplace=True)
+df["PAY_0"].replace("-1", "0", regex=True, inplace=True)
+
+df["PAY_2"].replace("-2", "0", regex=True, inplace=True)
+df["PAY_2"].replace("-1", "0", regex=True, inplace=True)
+
+df["PAY_3"].replace("-2", "0", regex=True, inplace=True)
+df["PAY_3"].replace("-1", "0", regex=True, inplace=True)
+
+df["PAY_4"].replace("-2", "0", regex=True, inplace=True)
+df["PAY_4"].replace("-1", "0", regex=True, inplace=True)
+
+df["PAY_5"].replace("-2", "0", regex=True, inplace=True)
+df["PAY_5"].replace("-1", "0", regex=True, inplace=True)
+
+df["PAY_6"].replace("-2", "0", regex=True, inplace=True)
+df["PAY_6"].replace("-1", "0", regex=True, inplace=True)
+
+df.describe()
+
+
+
+# the performance table
+# removing the class column
+performanceTable = df.iloc[:,:-1] # -3
+print("\nPerformance Table \n", performanceTable)
+
+# ranks of the alternatives
+
+data = df.iloc[:,-1:].values.flatten()
+rownames = performanceTable.index.values
+alternativesRanks = pd.DataFrame([data], columns=rownames)
+print("\nAlternative Ranks\n", alternativesRanks)
+
+
+minmaxdata = ["max","max","max","min", "min","min","min","min","min","min","min","max","max", "max","max","max","max","max","max","max","max","max","max"]
+
+columnnames = performanceTable.columns.values
+criteriaMinMax = pd.DataFrame([minmaxdata], columns=columnnames)
+print("\nCriteria Min Max \n", criteriaMinMax,) 
+
+
+bpdata = [4,2,3,2,4, 4,4,4, 4,4,4,4, 4,4,4,4,4,4,4,4,4,4,4]
+
+# number of break points for each criterion
+criteriaNumberOfBreakPoints = pd.DataFrame(
+    [bpdata],
+    columns=performanceTable.columns.values,
+)
+
+
+##################### UTASTAR CREDIT SCORE #########################
+  
+
+(
+    optimum,
+    valueFunctions,
+    overallValues,
+    outRanks,
+    errorValuesPlus,
+    errorValuesMinus,
+    tau,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+    averageOverallValues,
+) = UTASTAR(
+    performanceTable,
+    criteriaMinMax,
+    criteriaNumberOfBreakPoints,
+    epsilon,
+    alternativesRanks=alternativesRanks,
+)
+
+print(
+    optimum,  
+    valueFunctions,
+    overallValues,
+    outRanks,
+    errorValuesPlus,
+    errorValuesMinus,
+    tau,
+    minWeights,
+    maxWeights,
+    averageValueFunctions,
+    averageOverallValues,
+    sep="\n",
+) 
+
+print("End")

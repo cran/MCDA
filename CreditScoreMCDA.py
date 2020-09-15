@@ -582,3 +582,45 @@ print(
 ) 
 
 print("End")
+
+# Insert to multi criteria matrix
+df.insert(24, "OutRanks", outRanks.transpose())
+df.insert(25, "OverallValues", overallValues.transpose())
+""" 
+df = df.sort_values(by=['OutRanks'])
+
+#cooking
+df = df.sort_values(by=['Class'])
+dfte = df.sort_values(by=['OverallValues'], ascending = False)
+df = df.iloc[:,:-2]
+df.insert(18, "OverallValues", dfte.iloc[:,-2:-1].values)
+df.insert(19, "OutRanks", dfte.iloc[:,-1:].values)
+
+#Accurancy true postives + false postives 
+nrows= df.shape[0]
+y=df.columns.get_loc("Class")
+y2=df.columns.get_loc("OutRanks")
+accur = [1 for x in range(1, df.shape[0]) if (df.iloc[x,y2]<301 and df.iloc[x,y] == 1)   ]
+accur2 = [1 for x in range(1, df.shape[0]) if (df.iloc[x,y2]>302 and df.iloc[x,y]==2) ]
+ """
+# Insert valueFunctions to criteria/columns
+data = [valueFunctions.iloc[x, (bpdata[x//2]-1)] for x in range(1, len(valueFunctions), 2) ]
+data = pd.DataFrame(data, index=performanceTable.columns.values, columns=["ValueFunc"])
+valuefunc = data.transpose()
+
+# TODO Replace -3 and -2 with more adjustable code 
+#distribute overall values to all dataframe based on valueFunc
+nrows=df.shape[0]
+ncols= performanceTable.shape[1]
+for i in range(0,nrows):
+    df.iloc[i,0:ncols] = df.iloc[i,-2] * valuefunc.values.flatten()
+
+#Append valuefunc row 
+df = pd.concat([valuefunc, df], ignore_index=False)
+
+utastarvaluefun=valuefunc
+
+print(df)
+df.to_excel(
+    r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\Taiwan Dataset\UtastarResults.xls"
+)

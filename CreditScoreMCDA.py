@@ -452,9 +452,22 @@ topsisdf2.insert(18,"Class",overall2.iloc[:,2])
 topsisdf2.to_excel(r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\TOPSISUtadisResults.xlsx")
 
 
+############################################################################################
+############################## Taiwan dataset #############################################
+
+import pandas as pd
+import random  
+import sys 
+#sys.path.append("E:/Google Drive/PC SHIT/HMMY/Diplomatiki/methods/MCDA")
+from  Pyth.UTASTAR import *
 
 
-#Taiwan dataset 
+# UTASTAR EXAMPLE
+# the separation threshold
+
+epsilon = 0.1
+
+
 
 df = pd.read_excel(
     r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\Taiwan Dataset\default of credit card clients.xls",
@@ -463,22 +476,23 @@ df = pd.read_excel(
 )
 
 #pre prossesing 
-
+#random.sample(range(1000),100)
+nrows=440
 df.columns =  df.iloc[2].values
-
+df=df.iloc[3:nrows]
 # Set index name
 df.columns.name = "Alternatives"
 
 
 # Reset index
 df = df.reset_index(drop=True)
-
+df = df.drop(["ID"],axis=1)
 # Convert all dataframe values to integer
 df = df.apply(pd.to_numeric)
 
 #Visualization 
 
-df = df.drop(["ID"],axis=1)
+
 
 # Change qualitative values to quantitative
 
@@ -622,5 +636,5 @@ utastarvaluefun=valuefunc
 
 print(df)
 df.to_excel(
-    r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\Taiwan Dataset\UtastarResults.xls"
+    r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\Taiwan Dataset\UtastarResults.xlsx"
 )

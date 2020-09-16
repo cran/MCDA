@@ -40,6 +40,37 @@ df = df.apply(pd.to_numeric)
 #Visualization 
 
 
+############Plots ######
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+#############################################
+######## Histograms with pandas##### pair of 2
+############################################## 
+dfplot = df
+
+dfplot.hist(figsize=[25,15])
+plt.tight_layout()
+
+dfplot.hist(bins=15, color='steelblue', edgecolor='black', linewidth=1.0,
+           xlabelsize=10, ylabelsize=10, grid=True )
+plt.tight_layout()
+plt.tight_layout(rect=(1, 1, 0, 0))
+
+
+
+#############################
+# Correlation Matrix Heatmap##
+#############################
+
+f, ax = plt.subplots(figsize=(15, 10))
+corr = performanceTable.corr()
+hm = sns.heatmap(round(corr,2), annot=True, ax=ax, cmap="coolwarm",fmt='.2f',
+                 linewidths=.05)
+f.subplots_adjust(top=0.93)
+t= f.suptitle('Wine Attributes Correlation Heatmap', fontsize=14)
+
+
 
 # Change qualitative values to quantitative
 

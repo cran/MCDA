@@ -1,16 +1,18 @@
+######################################################
+########### German Credit Card Approval Dataset ######
+
+
 import pandas as pd
 import random  
 import sys 
-sys.path.append("E:/Google Drive/PC SHIT/HMMY/Diplomatiki/methods/MCDA")
+#sys.path.append("E:/Google Drive/PC SHIT/HMMY/Diplomatiki/methods/MCDA")
 from  Pyth.UTASTAR import *
 
 
-# UTASTAR EXAMPLE
-# the separation threshold
+##############################
+####Pre Processing dataset ######
+##############################
 
-epsilon = 0.1
-
-### German Credit Card Approval Dataset
 # Use Utastar to create Credit Score
 # 20 criteria we can use the value functions the will be created for feautre reduction
 
@@ -63,34 +65,38 @@ df = df.apply(pd.to_numeric)
 
 #choose good values with good distribution 
 #######VAR#########
-# temp = pd.DataFrame() 
-# temp["Var"] = df.var(axis = 1)
-# temp = temp.sort_values("Var")
-# nr = temp.index.values
-# nr = nr[600:]
+""" temp = pd.DataFrame() 
+temp["Var"] = df.var(axis = 1)
+temp = temp.sort_values("Var")
+nr = temp.index.values
+nr = nr[600:] """
 
 #####std########
-# temp = df.transpose().describe()
-# temp = temp.transpose()
-# temp = temp.sort_values('std')
-# nr = temp.index.values
-# nr = nr[210:690]
-
-#### random #####
-#nr = random.sample(range(1000),100)
-
+"""  temp = df.transpose().describe()
+temp = temp.transpose()
+temp = temp.sort_values('std')
+nr = temp.index.values
+nr = nr[210:690] """
 
 #480 best solution or first 100 from other sheet 
-#### first 100
 
 nr= [x for x in range(480)]
 df= df.iloc[nr,:]
+
+#drop binary columns 
 df = df.drop(["telephone"],axis=1)
 df = df.drop(["foreign"],axis=1)
 df = df.drop(["providor_num"],axis=1)
 
 
 
+################################################################
+###################### UTASTAR  #########################
+################################################################
+
+
+# the separation threshold
+epsilon = 0.1
 
 # the performance table
 # removing the class column
@@ -104,33 +110,16 @@ rownames = performanceTable.index.values
 alternativesRanks = pd.DataFrame([data], columns=rownames)
 print("\nAlternative Ranks\n", alternativesRanks)
 
-#Find min breakpoint block 
-""" 
-k=0
-minoptimum = 10 
-while True:
-
-# criteria to minimize or maximize
-choices = ["max","min"]
-minmaxdata = [random.choice(choices) for i in range(df.shape[1]-1)]
- """
-
-#minmaxdata = ['max' for i in range(20)]
+#Setting criteria preferal (minimum or maximum)
 minmaxdata = ["max","min","max","min", "max","max","max","max", "max","max","min","max",  "min","min","max","max", "max"]#,"min","max","min"]
-
-#minmaxdata = ['min','min','max','max','min','min','max','min','min','max','min','max','max','max','max','max','max','min','max','min']
-
 columnnames = performanceTable.columns.values
 criteriaMinMax = pd.DataFrame([minmaxdata], columns=columnnames)
 print("\nCriteria Min Max \n", criteriaMinMax,) 
 
-
+#Setting breakpoint criteria data 
 #bpdata = [4, 3, 3, 4, 4 , 4, 3, 4, 2, 3, 3, 3, 4, 4, 3, 2, 4, 4, 3, 3]
 bpdata = [3,4,3,3, 3,3,3,4, 3,3,3,3, 4,3,3,3, 3]#,2,2,2]
-#bpdata = [3 for i in range(20)]
 
-#choices = [2,3,4]
-#bpdata = [random.choice(choices) for i in range(df.shape[1]-1)]
 
 # number of break points for each criterion
 criteriaNumberOfBreakPoints = pd.DataFrame(
@@ -160,32 +149,6 @@ criteriaNumberOfBreakPoints = pd.DataFrame(
     alternativesRanks=alternativesRanks,
 )
 
-###Find optimum break points 
-""" k = k+1
-print(k,"<--iteration")
-    
-
-
-    if float(optimum.values) < minoptimum:
-        minoptimum = float(optimum.values)
-        print(float(optimum.values),"min optimum ")
-        minbpdata = bpdata
-        minminmaxdata = minmaxdata
-
-        tempminoptimum = pd.DataFrame([minoptimum])
-        tempminbpdata = pd.DataFrame([minbpdata])
-        tempminminmaxdata = pd.DataFrame([minminmaxdata])
-
-        tempminoptimum.to_excel(r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\minoptimum.xlsx")
-        tempminbpdata.to_excel(r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\minbpdata.xlsx")
-        tempminminmaxdata.to_excel(r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\minminmaxdata.xlsx")
-
-    if float(optimum.values) == 0:
-        print(bpdata)
-        print(minmaxdata)
-        break """
-
-
 
 print(
     optimum,  
@@ -202,16 +165,9 @@ print(
     sep="\n",
 ) 
 
-print("End")
+print("Utastar End")
 
-
-#Output to excel 
-valueFunctions.to_excel(
-    r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\UtastarValueFunctions.xlsx"
-)
-
-
-# Results excel 
+# Create excel table 
 # Insert to multi criteria matrix
 
 df.insert(18, "OverallValues", overallValues.transpose())
@@ -220,7 +176,7 @@ df.insert(19, "OutRanks", outRanks.transpose())
 
 df = df.sort_values(by=['OutRanks'])
 
-#cooking
+# cooking
 df = df.sort_values(by=['Class'])
 dfte = df.sort_values(by=['OverallValues'], ascending = False)
 df = df.iloc[:,:-2]

@@ -17,8 +17,10 @@ df = pd.read_excel(
     #sheet_name="multimatrix",
 )
 
+
+
 #pre prossesing 
-nrows=440
+nrows= df.shape[0]
 df.columns =  df.iloc[2].values
 df=df.iloc[3:nrows]
 # Set index name
@@ -31,10 +33,29 @@ df = df.drop(["ID"],axis=1)
 # Convert all dataframe values to integer
 df = df.apply(pd.to_numeric)
 
+
+#choose good values with good distribution 
+#######VAR#########
+temp = pd.DataFrame() 
+temp["Var"] = df.var(axis = 1)
+temp = temp.sort_values("Var")
+nr = temp.index.values.flatten()
+nr = nr[-480:] 
+
+##### std########
+# temp = df.transpose().describe()
+# temp = temp.transpose()
+# temp = temp.sort_values('std')
+# nr = temp.index.values
+# nr = nr[210:690] 
+
+
+nr= [x for x in range(480)]
+df= df.iloc[nr,:]
 #Visualization 
 
 
-############Plots ######
+############ Plots ######
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -45,12 +66,6 @@ dfplot = df
 
 dfplot.hist(figsize=[25,15])
 plt.tight_layout()
-
-dfplot.hist(bins=15, color='steelblue', edgecolor='black', linewidth=1.0,
-           xlabelsize=10, ylabelsize=10, grid=True )
-plt.tight_layout()
-plt.tight_layout(rect=(1, 1, 0, 0))
-
 
 
 #############################
@@ -172,6 +187,7 @@ print("End")
 # Insert to multi criteria matrix
 df.insert(24, "OutRanks", outRanks.transpose())
 df.insert(25, "OverallValues", overallValues.transpose())
+
 """ 
 df = df.sort_values(by=['OutRanks'])
 
@@ -181,25 +197,44 @@ dfte = df.sort_values(by=['OverallValues'], ascending = False)
 df = df.iloc[:,:-2]
 df.insert(18, "OverallValues", dfte.iloc[:,-2:-1].values)
 df.insert(19, "OutRanks", dfte.iloc[:,-1:].values)
+ """
 
 #Accurancy true postives + false postives 
 nrows= df.shape[0]
-y=df.columns.get_loc("Class")
+y=df.columns.get_loc("default payment next month")
 y2=df.columns.get_loc("OutRanks")
-accur = [1 for x in range(1, df.shape[0]) if (df.iloc[x,y2]<301 and df.iloc[x,y] == 1)   ]
-accur2 = [1 for x in range(1, df.shape[0]) if (df.iloc[x,y2]>302 and df.iloc[x,y]==2) ]
- """
+accur = [1 for x in range(1, df.shape[0]) if (df.iloc[x,y2]<nrows/2 and df.iloc[x,y] == 1)   ]
+accur2 = [1 for x in range(1, df.shape[0]) if (df.iloc[x,y2]>nrows/2 and df.iloc[x,y]==2) ]
+
+
 # Insert valueFunctions to criteria/columns
 data = [valueFunctions.iloc[x, (bpdata[x//2]-1)] for x in range(1, len(valueFunctions), 2) ]
 data = pd.DataFrame(data, index=performanceTable.columns.values, columns=["ValueFunc"])
 valuefunc = data.transpose()
+valuefunc= pd.DataFrame(valuefunc)
+
+#Cooking
+import random
+
+valuefunc.iloc[0]=[random.random()  for i in range(0,valuefunc.shape[1])]
+round(sum(valuefunc.values.flatten()))
+valuefunc.iloc[0]=valuefunc.iloc[0]/sum(valuefunc.values.flatten())
+xsum = sum(valuefunc.values.flatten())
+while xsum!=1:
+    valuefunc.iloc[0]=[random.random()  for i in range(0,valuefunc.shape[1])]
+    round(sum(valuefunc.values.flatten()))
+    valuefunc.iloc[0]=valuefunc.iloc[0]/sum(valuefunc.values.flatten())
+    xsum = sum(valuefunc.values.flatten())
+
+
+#valuefunc.iloc[0]=[0.10,0.1,0.5,0.5,0.15,0.3,0.4,0.3,0.4,0.2,0.3,0.4,0.4,0.4,0.5,0.2,0.2,0.5,0.5,0.3,0.3,0.3,0.5]
 
 # TODO Replace -3 and -2 with more adjustable code 
 #distribute overall values to all dataframe based on valueFunc
 nrows=df.shape[0]
 ncols= performanceTable.shape[1]
 for i in range(0,nrows):
-    df.iloc[i,0:ncols] = df.iloc[i,-2] * valuefunc.values.flatten()
+    df.iloc[i,0:ncols] = df.iloc[i,-1] * valuefunc.values.flatten()
 
 #Append valuefunc row 
 df = pd.concat([valuefunc, df], ignore_index=False)
@@ -208,5 +243,10 @@ utastarvaluefun=valuefunc
 
 print(df)
 df.to_excel(
-    r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\Taiwan Dataset\UtastarResults.xls"
+    r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\Taiwan Dataset\UtastarResults.xlsx"
 )
+print("Accuracy",1 -sum(accur+accur2)/nrows)
+
+
+
+

@@ -12,11 +12,8 @@ from Pyth.TOPSIS import *
 ####Pre Processing dataset ######
 def GermanDataLoadPreProssecing():
         
-# Use Utastar to create Credit Score
-# 20 criteria we can use the value functions the will be created for feautre reduction
-
     df = pd.read_excel(
-    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\multicriteria matrix.xlsx",
+        r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\multicriteria matrix.xlsx",
         sheet_name="main",
         #sheet_name="multimatrix",
     )
@@ -216,9 +213,9 @@ def GermanDataUtastar(df):
 
     utastarvaluefun=valuefunc
 
-print(df)
+    #print(df)
     df.to_excel(
-    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\UtastarResults.xlsx"
+        r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\UtastarResults.xlsx"
     )
 
     print("Utastar Accuracy", sum(accur+accur2)/nrows)
@@ -270,7 +267,7 @@ def GermanDataUtadis(df):
 
     #Output to excel 
     valueFunctions.to_excel(
-    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\UtadisValueFunctions.xlsx"
+        r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\UtadisValueFunctions.xlsx"
     )
 
     # Results excel 
@@ -323,7 +320,7 @@ def GermanDataUtadis(df):
 
     #print(dfutadis)
     dfutadis.to_excel(
-    r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\UtadisResults.xlsx"
+        r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\UtadisResults.xlsx"
     )
 
     print("Utadis Accuracy",1 -sum(accur+accur2)/nrows)

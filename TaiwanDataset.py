@@ -249,13 +249,15 @@ def taiwanUtastar(df):
 
 
 #### Main ###
+def main():
+    #Load and Process
+    df=taiwanDataLoadPreProssecing()
 
-#Load and Process
-df=taiwanDataLoadPreProssecing()
-
-#Visualization 
-#HistogramAndHitmapPlots(df)
+    #Visualization 
+    #HistogramAndHitmapPlots(df)
 
 
-#Taiwan Utastar Results 
-taiwanUtastar(df)
+    #Taiwan Utastar Results 
+    taiwanUtastar(df)
+
+main()

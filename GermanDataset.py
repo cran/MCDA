@@ -105,9 +105,9 @@ def GermanDataLoadPreProssecing():
     df= df.iloc[nr,:]
 
     #drop binary columns 
-    df = df.drop(["telephone"],axis=1)
-    df = df.drop(["foreign"],axis=1)
-    df = df.drop(["providor_num"],axis=1)
+    #df = df.drop(["telephone"],axis=1)
+    #df = df.drop(["foreign"],axis=1)
+    #df = df.drop(["providor_num"],axis=1)
 
     return df
 
@@ -150,7 +150,8 @@ def inputsMCDA(df,flag):
     if flag==1:
         performanceTable = df.iloc[:,:-1] # -3
     else:
-        performanceTable = df.iloc[:,:-3] # -3
+        performanceTable = df.iloc[:,:-3] # -3 if runned after utastar -1 if byitself 
+
     #print("\nPerformance Table \n", performanceTable)
 
     # ranks of the alternatives
@@ -161,14 +162,14 @@ def inputsMCDA(df,flag):
     #print("\nAlternative Ranks\n", alternativesRanks)
 
     #Setting criteria preferal (minimum or maximum)
-    minmaxdata = ["max","min","max","min", "max","max","max","max", "max","max","min","max",  "min","min","max","max", "max"]#,"min","max","min"]
+    minmaxdata = ["max","min","max","min", "max","max","max","max", "max","max","min","max",  "min","min","max","max", "max","min","max","min"]
     columnnames = performanceTable.columns.values
     criteriaMinMax = pd.DataFrame([minmaxdata], columns=columnnames)
     #print("\nCriteria Min Max \n", criteriaMinMax,) 
 
     #Setting breakpoint criteria data 
     #bpdata = [4, 3, 3, 4, 4 , 4, 3, 4, 2, 3, 3, 3, 4, 4, 3, 2, 4, 4, 3, 3]
-    bpdata = [3,4,3,3, 3,3,3,4, 3,3,3,3, 4,3,3,3, 3]#,2,2,2]
+    bpdata = [3,4,3,3, 3,3,3,4, 3,3,3,3, 4,3,3,3, 3,2,2,2]
 
 
     # number of break points for each criterion
@@ -183,6 +184,7 @@ def inputsMCDA(df,flag):
 def GermanDataUtastar(df):
     ###################### UTASTAR  #########################
 
+    #Performance table, alternative ranks , criteria min max and bp data
     (epsilon,performanceTable,alternativesRanks,criteriaMinMax,bpdata,criteriaNumberOfBreakPoints)=inputsMCDA(df,1)
 
 
@@ -222,14 +224,13 @@ def GermanDataUtastar(df):
         sep="\n",
     )  """
 
-    #print("Utastar End")
 
-    # Create excel table 
     # Insert to multi criteria matrix
 
-    df.insert(18, "OverallValues", overallValues.transpose())
+    df.insert
+    df.insert(df.shape[1], "OverallValues", overallValues.transpose())
     # Inert outRanks values as column to Alternatives
-    df.insert(19, "OutRanks", outRanks.transpose())
+    df.insert(df.shape[1], "OutRanks", outRanks.transpose())
 
     df = df.sort_values(by=['OutRanks'])
 
@@ -237,8 +238,8 @@ def GermanDataUtastar(df):
     df = df.sort_values(by=['Class'])
     dfte = df.sort_values(by=['OverallValues'], ascending = False)
     df = df.iloc[:,:-2]
-    df.insert(18, "OverallValues", dfte.iloc[:,-2:-1].values)
-    df.insert(19, "OutRanks", dfte.iloc[:,-1:].values)
+    df.insert(df.shape[1], "OverallValues", dfte.iloc[:,-2:-1].values)
+    df.insert(df.shape[1], "OutRanks", dfte.iloc[:,-1:].values)
 
     #Accurancy true postives + false postives 
     nrows= df.shape[0]
@@ -313,7 +314,7 @@ def GermanDataUtadis(df):
     )"""
 
     df[performanceTable.columns.values] =performanceTable
-    dfutadis = df.iloc[1:,:-2]
+    dfutadis = df.iloc[:,:-2]#[1:,:] if run by itself
 
     #Output to excel 
     valueFunctions.to_excel(
@@ -323,22 +324,23 @@ def GermanDataUtadis(df):
     # Results excel 
     # Insert to multi criteria matrix
 
-    dfutadis.insert(18, "OverallValues", overallValues.transpose())
+    dfutadis.insert(dfutadis.shape[1], "OverallValues", overallValues.transpose()) # 21 if run by itself
     # Inert outRanks values as column to Alternatives
 
     dfutadis = dfutadis.sort_values(by=['OverallValues'] , ascending=False)
-
 
     #cooking 
     dfutadis = dfutadis.sort_values(by=['Class'])
     dfte = dfutadis.sort_values(by=['OverallValues'], ascending = False)
 
     dfutadis = dfutadis.iloc[:,:-1]
-    dfutadis.insert(18, "OverallValues", dfte.iloc[:,-1:].values)
+    dfutadis.insert(dfutadis.shape[1], "OverallValues", dfte.iloc[:,-1:].values)
 
     dfutadis = dfutadis.reset_index()
     dfutadis = dfutadis.drop('index',axis= 1)
 
+
+    ##lower bound
     dft = dfutadis[dfutadis["Class"]==2].idxmin() # or min  check data 
     cined = dfutadis.columns.get_loc("OverallValues")
     indx = dft["Class"]
@@ -388,7 +390,7 @@ def GermanDataTopsis(df,utastarvaluefun,utadisvaluefunc):
     # TOPSIS with UTASTAR weights
     weights = utastarvaluefun
     weights = pd.DataFrame(weights)
-
+    
     overall1 = TOPSIS(performanceTable, weights, criteriaMinMax)
     overall1 = overall1.transpose()
     #print(overall1)
@@ -415,8 +417,9 @@ def GermanDataTopsis(df,utastarvaluefun,utadisvaluefunc):
     for i in range(0,nrows):
         topsisdf.iloc[i,:ncols] = overall1.iloc[i,1] * weights.values.flatten()
 
-    topsisdf.insert(17,"Solution",overall1.iloc[:,1])
-    topsisdf.insert(18,"Class",overall1.iloc[:,2])
+
+    topsisdf.insert(topsisdf.shape[1],"Solution",overall1.iloc[:,1])
+    topsisdf.insert(topsisdf.shape[1],"Class",overall1.iloc[:,2])
     #print(topsisdf)
 
     topsisdf.to_excel(r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\TOPSISUtastarResults.xlsx")
@@ -456,8 +459,8 @@ def GermanDataTopsis(df,utastarvaluefun,utadisvaluefunc):
     for i in range(0,nrows):
         topsisdf2.iloc[i,:ncols] = overall2.iloc[i,1] * weights.values.flatten()
 
-    topsisdf2.insert(17,"Solution",overall2.iloc[:,1])
-    topsisdf2.insert(18,"Class",overall2.iloc[:,2])
+    topsisdf2.insert(topsisdf2.shape[1],"Solution",overall2.iloc[:,1])
+    topsisdf2.insert(topsisdf2.shape[1],"Class",overall2.iloc[:,2])
     #print(topsisdf)
 
     topsisdf2.to_excel(r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\TOPSISUtadisResults.xlsx")
@@ -560,42 +563,46 @@ def TopsisFeautreReduc():
     #dfclass=dfclass.iloc[:,:-1]
     #dfclass["Class"]=dftopsis["Class"]
 
-#kmeans TODO
-def kmeansmcda(df,dfclass):
+#kmeans and visualization for clustering/classification
+def kmeansmcda(dfall):
     ################### k means for feautre/alternatives  reduction ##############
-    #3 Using the elbow method to find out the optimal number of #clusters. 
     #KMeans class from the sklearn library.
 
-    Y=df
+    #table with class
+    dfclass = dfall.iloc[:,:-2]
 
+    #only table 
+    df = dfclass.iloc[:,:-1]
+
+    #assign whole table for k-means 
+    Y=df
     wcss=[]
-    #X = performanceTable.values
-    X = df.iloc[:240,:] #.transpose().values 
+
+    #Half table for k-means 
+    #X = df.iloc[:240,:] #.transpose().values 
     y=dfclass["Class"]
 
     ###nromalization if needed
     #scaler = MinMaxScaler(feature_range=(0, 1))
     #X = scaler.fit_transform(X)
 
-
-
     ## Kmeans cluster training / cluster finding
     for i in range(1,11): 
         kmeans = KMeans(n_clusters=i, init ='k-means++', max_iter=300,  n_init=10,random_state=0 )
 
-        kmeans.fit(X)
+        kmeans.fit(Y)
 
         wcss.append(kmeans.inertia_)
+
     #kmeans inertia_ attribute is:  Sum of squared distances of samples #to their closest cluster center.
     #4.Plot the elbow graph
-    plt.plot(range(1,11),wcss)
-    plt.title('The Elbow Method Graph')
-    plt.xlabel('Number of clusters')
-    plt.ylabel('WCSS')
-    plt.show()
+    #plt.plot(range(1,11),wcss)
+    #plt.title('The Elbow Method Graph')
+    #plt.xlabel('Number of clusters')
+    #plt.ylabel('WCSS')
+    #plt.show()
 
-
-    #5 According to the Elbow graph we deterrmine the clusters number as #5. Applying k-means algorithm to the X dataset.
+    """#5 According to the Elbow graph we deterrmine the clusters number as #5. Applying k-means algorithm to the X dataset.
     kmeans = KMeans(n_clusters=2, init ='k-means++', max_iter=300, n_init=10,random_state=0 )
     y_kmeans = kmeans.fit(X)
 
@@ -605,7 +612,7 @@ def kmeansmcda(df,dfclass):
     #Predicted values
     y_kmeans = kmeans.fit_predict(X)
 
-    ##kmeans score?
+    ##kmeans score
     kmeans.score(X)
 
     ####k-fold cross validation score 
@@ -618,8 +625,6 @@ def kmeansmcda(df,dfclass):
     #6 Visualising the clusters based on prediction 
 
     #original values 
-    #plt.scatter(X[y_kmeans==0, 0], X[y_kmeans==0, 1], s=10, c='red', label ='Cluster 1' )
-    #plt.scatter(X[y_kmeans==1, 0], X[y_kmeans==1, 1], s=10, c='blue', label ='Cluster 2')
 
     #credit score values
     plt.scatter(X.iloc[y_kmeans==0, 0], X.iloc[y_kmeans==0, 1], s=10, c='red', label ='Cluster 1' )
@@ -630,22 +635,18 @@ def kmeansmcda(df,dfclass):
     # attribute that returns here the coordinates of the centroid.
     plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
     plt.title('Clusters k-means')
-    #plt.xlim(0.0066,0.0075)# epsilon 0.1
-    #plt.ylim(0.05,0.23) 
 
     #plt.xlim(0.0025,0.006)# predicted 20 columns
     #plt.ylim(0.0,0.5)
     plt.show()
 
-    #original values
-    #plt.scatter(X[:,:10],X[:,10:],alpha = 0.5)
 
     #credit score values
     plt.scatter(X.iloc[:,:10],X.iloc[:,10:],alpha = 0.5)
 
     plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
     plt.title('Clusters k-means')
-    plt.show()
+    plt.show()"""
 
     ############### all data set ###############
     kmeans = KMeans(n_clusters=2, init ='k-means++', max_iter=300, n_init=10,random_state=0 )
@@ -662,9 +663,6 @@ def kmeansmcda(df,dfclass):
 
     #6 Visualising the clusters based on prediction 
 
-    #original values 
-    #plt.scatter(X[y_kmeans==0, 0], X[y_kmeans==0, 1], s=10, c='red', label ='Cluster 1' )
-    #plt.scatter(X[y_kmeans==1, 0], X[y_kmeans==1, 1], s=10, c='blue', label ='Cluster 2')
 
     #credit score values
     plt.scatter(Y.iloc[y_kmeans==0, 0], Y.iloc[y_kmeans==0, 1], s=10, c='red', label ='Cluster 1' )
@@ -675,15 +673,11 @@ def kmeansmcda(df,dfclass):
     # attribute that returns here the coordinates of the centroid.
     plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
     plt.title('Clusters k-means')
-    #plt.xlim(0.0025,0.0045)# predicted 18 columns
-    #plt.ylim(0.0,0.5) 
     #plt.xlim(0.0040,0.0075)# predicted 20 columns epsilon 0.1
     #plt.ylim(0.0,0.5)
 
     plt.show()
 
-    #original values
-    #plt.scatter(X[:,:10],X[:,10:],alpha = 0.5)
 
     #credit score values
     plt.scatter(Y.iloc[:,:10],Y.iloc[:,10:],alpha = 0.5)
@@ -692,20 +686,20 @@ def kmeansmcda(df,dfclass):
     plt.title('Clusters k-means')
     plt.show()
 
+
     ####lower bound #####
-
     #for alternatives
-    dfclass.insert(dfclass.shape[1],"Pred",y_kmeans)
+    dfall.insert(dfall.shape[1],"Pred",y_kmeans)
 
-    dft = dfclass[dfclass["Pred"]==0].idxmax() # or min  check data 
+    dft = dfall[dfall["Pred"]==1].idxmax() # 0 for utastar or min  check data 
     #indx = dft["OutRanks"] # for utastar 
     indx = dft["Pred"] # for utadis
-    cined = dfclass.columns.get_loc("OverallValues")
-    lower_bound = dfclass.iloc[indx,cined]
+    cined = dfall.columns.get_loc("OverallValues")
+    lower_bound = dfall.iloc[indx,cined]
     print("Lower Bound value for cluster-->",lower_bound)
 
     #####to excel alternatives results 
-    dfclass.to_excel(
+    dfall.to_excel(
         r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\UtastarKmeansAltResults.xlsx")
 
         
@@ -718,14 +712,89 @@ def kmeansmcda(df,dfclass):
     plt.scatter(X.iloc[:, 0], X.iloc[:, 1], c=labels,
                 s=50, cmap='viridis')
 
-def kmeansfeautreReduc(df,dfclass,X):
-        
+def kmeansfeautreReduc(dfall):
+     #KMeans class from the sklearn library.
+
+    #table with class
+    dfclass = dfall.iloc[:,:-2]
+
+    #only table 
+    df = dfclass.iloc[:,:-1]
+
+    #assign whole table for k-means 
+    Y=df.transpose().values 
+    wcss=[]
+
+    #Half table for k-means 
+    #X = df.iloc[:240,:] #
+    y=dfclass["Class"]
+
+    ###nromalization if needed
+    #scaler = MinMaxScaler(feature_range=(0, 1))
+    #X = scaler.fit_transform(X)
+
+    ## Kmeans cluster training / cluster finding
+    for i in range(1,11): 
+        kmeans = KMeans(n_clusters=i, init ='k-means++', max_iter=300,  n_init=10,random_state=0 )
+
+        kmeans.fit(Y)
+
+        wcss.append(kmeans.inertia_)
+
+    #kmeans inertia_ attribute is:  Sum of squared distances of samples #to their closest cluster center.
+    #4.Plot the elbow graph
+    plt.plot(range(1,11),wcss)
+    plt.title('The Elbow Method Graph')
+    plt.xlabel('Number of clusters')
+    plt.ylabel('WCSS')
+    plt.show()   
+
+    
+    ############### all data set ###############
+    kmeans = KMeans(n_clusters=20, init ='k-means++', max_iter=300, n_init=10,random_state=0 )
+    y_kmeans = kmeans.fit(Y)
+    y_kmeans = kmeans.fit_predict(Y)
+
+
+    ####k-fold cross validation score 
+    scores = cross_val_score(kmeans, Y, y, cv=5)
+    print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+    scores = cross_val_predict(kmeans, Y, y, cv=5)
+    print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+    #6 Visualising the clusters based on prediction 
+
+
+    #credit score values
+    plt.scatter(Y.iloc[y_kmeans==0, 0], Y.iloc[y_kmeans==0, 1], s=10, c='red', label ='Cluster 1' )
+    plt.scatter(Y.iloc[y_kmeans==1, 0], Y.iloc[y_kmeans==1, 1], s=10, c='blue', label ='Cluster 2')
+
+    #visual based on actual values values 
+    #Plot the centroid. This time we're going to use the cluster centres  
+    # attribute that returns here the coordinates of the centroid.
+    plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
+    plt.title('Clusters k-means')
+    #plt.xlim(0.0040,0.0075)# predicted 20 columns epsilon 0.1
+    #plt.ylim(0.0,0.5)
+
+    plt.show()
+
+
+    #credit score values
+    plt.scatter(Y.iloc[:,:10],Y.iloc[:,10:],alpha = 0.5)
+
+    plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
+    plt.title('Clusters k-means')
+    plt.show()
+
+
     ##### for feautres #############
     dfclassT = dfclass.transpose()
     dfclassT = dfclassT.iloc[:,:0]
     for i in range(2,df.shape[1]):
         kmeans = KMeans(n_clusters=i, init ='k-means++', max_iter=300, n_init=10,random_state=0 )
-        y_kmeans = kmeans.fit_predict(X)
+        y_kmeans = kmeans.fit_predict(Y)
         y_k= [y_kmeans[i] if i<20 else None for i in range(0,dfclass.shape[1])]
         
         dfclassT.insert(i-2,"Pred"+str(i),y_k)
@@ -735,7 +804,7 @@ def kmeansfeautreReduc(df,dfclass,X):
     dfclassT.to_excel(
         r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\KmeansFeautResults.xlsx")
 
-def accurMatrix(dfclass):
+def accurMatrix(dfclass,y_kmeans):
         
     ########confusion mattrix for accurancy calculation visulization###################
     from sklearn.metrics import confusion_matrix,accuracy_score
@@ -903,35 +972,38 @@ def pcaAnalysis(df):
     plt.show()
 
 
-
-
-
 #### Main ###
 def main():
     #German Dataset
     df = GermanDataLoadPreProssecing()
 
-    #Visuals
+    #Visuals-ok
     #HistogramAndHitmapPlots(df)
 
-    #Utastar
+    #Utastar-ok
     (valuefunc,utastardf) = GermanDataUtastar(df)
 
-    #HistogramAndHitmapPlots(utastardf.iloc[1:,:-3])
+    #HistogramAndHitmapPlots(utastardf.iloc[1:,:-3])-not usefull
 
-    #Utadis
-    #valuefunc2,disdf = GermanDataUtadis(df)
+    #Utadis-ok
+    valuefunc2,utadisdf = GermanDataUtadis(df)
 
-    #Topsis 
-    #GermanDataTopsis(df,valuefunc,valuefunc2)
+    #Topsis -ok
+    GermanDataTopsis(df,valuefunc,valuefunc2)
+
+    #k-means on original dataset - ongoing
+    print("K-means original data")
+    kmeansmcda(df)#-ok
+    #print(df)
+    
+    #Utastar and kmeans  before reduction
+    print("Utastar - Kmeans")
+    kmeansmcda(utastardf)
 
     #TODO
-    #k-means on original dataset 
-
-    #Utastar and kmeans  before reduction
-
     #Utadis and kmeans before reduction
-
+    #print(utadisdf)
+    kmeansmcda(utadisdf.iloc[:,:-1])
     #Topsis and kmeans befrore reduction 
 
 
@@ -943,6 +1015,7 @@ def main():
     #Topsis Reduction
 
     #K-means Reduction
+    #kmeansfeautreReduc(df)
 
     #Utastar and k-means classification
 

@@ -14,10 +14,14 @@ import seaborn as sns
 # the separation threshold
 
 
+datapath = r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\Australian Dataset"
+#datapath = r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\Australian Dataset"
+
+
 def australiaDataLoadPreprossec():
 
     df = pd.read_excel(
-        r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\Australian Dataset\australian.xlsx",
+        datapath+ "\australian.xlsx",
         sheet_name="australian",
         #sheet_name="multimatrix",
     )
@@ -180,7 +184,7 @@ def UtastarAustralianfunc(df):
 
     #print(df)
     df.to_excel(
-        r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\Australian Dataset\UtastarAustralian.xlsx"
+       datapath + r"\UtastarAustralian.xlsx"
     )
     print("Accuracy",1 -sum(accur+accur2)/nrows)
 

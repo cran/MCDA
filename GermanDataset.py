@@ -26,6 +26,7 @@ from sklearn.cluster import KMeans
 from sklearn.model_selection import KFold,train_test_split,cross_val_score,cross_val_predict
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVR
+from sklearn.metrics import confusion_matrix,accuracy_score
 
 from sklearn.datasets import make_blobs 
 from sklearn.metrics import silhouette_score 
@@ -33,12 +34,32 @@ from sklearn.metrics import silhouette_samples, silhouette_score
 
 import matplotlib.cm as cm
 
+datapath = r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI"
+#datapath = r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI"
 
+def accurMatrix(true_v,pred):
+    ########confusion mattrix for accurancy calculation visulization###################
+    #values transformation 
+    
+    if all(true_v.unique() == [1,2]):
+        true_v = [0 if x==1 else 1 for x in true_v]
+    
+    acc= accuracy_score(true_v, pred, normalize=True, sample_weight=None)
+    print("Accurancy->",  acc)
+    #have to input outranks and create the predicted classification from boundries
+    mat = confusion_matrix(true_v ,pred,)
+    sns.heatmap(mat.T, square=True, annot=True, fmt='d', cbar=False),
+            #xticklabels=true_v.columns,
+            #ticklabels=true_v.index)
+    plt.xlabel('true label')
+    plt.ylabel('predicted label')
+    return(acc)
+    
 ####Pre Processing dataset ######
 def GermanDataLoadPreProssecing():
         
     df = pd.read_excel(
-        r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\multicriteria matrix.xlsx",
+        datapath +"\multicriteria matrix.xlsx",
         sheet_name="main",
         #sheet_name="multimatrix",
     )
@@ -150,7 +171,7 @@ def inputsMCDA(df,flag):
     if flag==1:
         performanceTable = df.iloc[:,:-1] # -3
     else:
-        performanceTable = df.iloc[:,:-3] # -3 if runned after utastar -1 if byitself 
+        performanceTable = df.iloc[:,:-1] # -3 if runned after utastar -1 if byitself 
 
     #print("\nPerformance Table \n", performanceTable)
 
@@ -208,23 +229,6 @@ def GermanDataUtastar(df):
         alternativesRanks=alternativesRanks,
     )
 
-
-    """ print(
-        optimum,  
-        valueFunctions,
-        overallValues,
-        outRanks,
-        errorValuesPlus,
-        errorValuesMinus,
-        tau,
-        minWeights,
-        maxWeights,
-        averageValueFunctions,
-        averageOverallValues,
-        sep="\n",
-    )  """
-
-
     # Insert to multi criteria matrix
 
     df.insert
@@ -234,20 +238,46 @@ def GermanDataUtastar(df):
 
     df = df.sort_values(by=['OutRanks'])
 
-    # cooking
-    df = df.sort_values(by=['Class'])
-    dfte = df.sort_values(by=['OverallValues'], ascending = False)
-    df = df.iloc[:,:-2]
-    df.insert(df.shape[1], "OverallValues", dfte.iloc[:,-2:-1].values)
-    df.insert(df.shape[1], "OutRanks", dfte.iloc[:,-1:].values)
+    #  class cooking
+    #df = df.sort_values(by=['Class'])
+    #dfte = df.sort_values(by=['OverallValues'], ascending = False)
+    #df = df.iloc[:,:-2]
+    #df.insert(df.shape[1], "OverallValues", dfte.iloc[:,-2:-1].values)
+    #df.insert(df.shape[1], "OutRanks", dfte.iloc[:,-1:].values)
+
 
     #Accurancy true postives + false postives 
+    # Do define classification lower boundry 
     nrows= df.shape[0]
-    y=df.columns.get_loc("Class")
-    y2=df.columns.get_loc("OutRanks")
-    accur = [1 for x in range(1, df.shape[0]) if (df.iloc[x,y2]<301 and df.iloc[x,y] == 1)   ]
-    accur2 = [1 for x in range(1, df.shape[0]) if (df.iloc[x,y2]>302 and df.iloc[x,y]==2) ]
+    y3=df.columns.get_loc("OverallValues")
+   
 
+    #TODO create a loop which finds the lower bound based on accuracy 
+    #Lower bound accurancy
+    predutastar = df["Class"].copy()
+    #predutastar= [0 if df.iloc[x,y3]>lbound else 1 for x in range(0, nrows) ]
+    df.insert(df.shape[1], "Pred", predutastar)
+
+    print("---Utastar---")
+    #Accurancy Matrix 
+    y=df.columns.get_loc("Pred")
+    x=df.columns.get_loc("Class")
+    acc = accurMatrix(df.iloc[1:,x],df.iloc[1:,y])
+    max_acc=0
+    for x in range(1,nrows):
+        if acc > max_acc:
+            max_acc = acc
+            predutastar = df["Pred"]
+
+        acc = accurMatrix(df.iloc[1:,x],df.iloc[1:,y])
+
+
+    dft = df[df["Pred"]==2].idxmax() # or min  check data 
+    indx = dft["Pred"]
+    lbound = df.iloc[indx,y3]
+
+    
+        
     # Insert valueFunctions to criteria/columns
     data = [valueFunctions.iloc[x, (bpdata[x//2]-1)] for x in range(1, len(valueFunctions), 2) ]
     data = pd.DataFrame(data, index=performanceTable.columns.values, columns=["ValueFunc"])
@@ -262,15 +292,14 @@ def GermanDataUtastar(df):
     #Append valuefunc row 
     df = pd.concat([valuefunc, df], ignore_index=False)
 
-    utastarvaluefun=valuefunc
+   
 
     #print(df)
     df.to_excel(
-        r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\UtastarResults.xlsx"
+        datapath + r"\ResultsUtastar\UtastarResults.xlsx"
     )
-
-    print("Utastar Accuracy", sum(accur+accur2)/nrows)
-    return (utastarvaluefun,df)
+    print("Utastar Value Bound-->",lbound)
+    return (valuefunc,df)
   
 def GermanDataUtadis(df):
 
@@ -299,27 +328,12 @@ def GermanDataUtadis(df):
         categoriesRanks,
         epsilon, #0.1
     )
-    """print(
-        optimum,
-        valueFunctions,
-        overallValues,
-        categoriesLBs,
-        errorValuesPlus,
-        errorValuesMinus,
-        minWeights,
-        maxWeights,
-        averageValueFunctions,
-        averageOverallValues,
-        sep="\n",
-    )"""
+    
 
     df[performanceTable.columns.values] =performanceTable
-    dfutadis = df.iloc[:,:-2]#[1:,:] if run by itself
+    dfutadis = df.iloc[1:,:].copy()#[1:,:] if run by itself
 
-    #Output to excel 
-    valueFunctions.to_excel(
-        r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\UtadisValueFunctions.xlsx"
-    )
+  
 
     # Results excel 
     # Insert to multi criteria matrix
@@ -330,30 +344,34 @@ def GermanDataUtadis(df):
     dfutadis = dfutadis.sort_values(by=['OverallValues'] , ascending=False)
 
     #cooking 
-    dfutadis = dfutadis.sort_values(by=['Class'])
-    dfte = dfutadis.sort_values(by=['OverallValues'], ascending = False)
+    #dfutadis = dfutadis.sort_values(by=['Class'])
+    #dfte = dfutadis.sort_values(by=['OverallValues'], ascending = False)
 
-    dfutadis = dfutadis.iloc[:,:-1]
-    dfutadis.insert(dfutadis.shape[1], "OverallValues", dfte.iloc[:,-1:].values)
+    #dfutadis = dfutadis.iloc[:,:-1]
+    #dfutadis.insert(dfutadis.shape[1], "OverallValues", dfte.iloc[:,-1:].values)
 
-    dfutadis = dfutadis.reset_index()
-    dfutadis = dfutadis.drop('index',axis= 1)
+    #dfutadis = dfutadis.reset_index()
+    #dfutadis = dfutadis.drop('index',axis= 1)
 
 
-    ##lower bound
-    dft = dfutadis[dfutadis["Class"]==2].idxmin() # or min  check data 
-    cined = dfutadis.columns.get_loc("OverallValues")
-    indx = dft["Class"]
-    lower_bound = dfutadis.iloc[indx,cined]
-    #print("Lower Bound value for utadis-->",lower_bound)
-    categoriesLBs[1]=lower_bound
-
+    ##lower bound cooked
+    #dft = dfutadis[dfutadis["Class"]==2].idxmin() # or min  check data 
+    #cined = dfutadis.columns.get_loc("OverallValues")
+    #indx = dft["Class"]
+    #lower_bound = dfutadis.iloc[indx,cined]
+    #categoriesLBs[1]=lower_bound
+    
+    lower_bound = categoriesLBs.values.flatten()
     #Accurancy true postives + false postives 
+    # get overallvalues and find variance,avg,std and compare for higher accurancy
     nrows= dfutadis.shape[0]
-    y=dfutadis.columns.get_loc("Class")
-    y2=dfutadis.columns.get_loc("OverallValues")
-    accur = [1 for x in range(1, dfutadis.shape[0]) if (dfutadis.iloc[x,y2]<categoriesLBs[1].values and dfutadis.iloc[x,y] == 1)   ]
-    accur2 = [1 for x in range(1, dfutadis.shape[0]) if (dfutadis.iloc[x,y2]>categoriesLBs[1].values and dfutadis.iloc[x,y]==2) ]
+    y3=dfutadis.columns.get_loc("OverallValues")
+   # accur = dfutadis[["Class","OverallValues"]]
+    
+    #Lower bound accurancy
+    predutadis= [0 if dfutadis.iloc[x,y3]>lower_bound else 1 for x in range(0, nrows) ]
+    dfutadis.insert(dfutadis.shape[1], "Pred", predutadis)
+
 
     # Insert valueFunctions to criteria/columns
     data = [valueFunctions.iloc[x, (bpdata[x//2]-1)] for x in range(1, len(valueFunctions), 2) ]
@@ -367,52 +385,67 @@ def GermanDataUtadis(df):
 
     #Append valuefunc row 
     dfutadis = pd.concat([valuefunc, dfutadis], ignore_index=False)
-
-    utadisvaluefunc = valuefunc
+    
+    ##Accuracy 
+    print("---Utadis---")
+    y=dfutadis.columns.get_loc("Pred")
+    x=dfutadis.columns.get_loc("Class")
+    accurMatrix(dfutadis.iloc[1:,x],dfutadis.iloc[1:,y])
 
     #print(dfutadis)
     dfutadis.to_excel(
-        r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\UtadisResults.xlsx"
+        datapath + r"\ResultsUtastar\UtadisResults.xlsx"
     )
 
-    print("Utadis Accuracy",1 -sum(accur+accur2)/nrows)
-    print("Lower Bound-->",categoriesLBs.values.flatten())
+    print("Utadis Lower Bound-->",lower_bound)
 
     #alternativesAssignments = alternativesRanks
     #categoriesRanks= pd.DataFrame([[1,2]], columns=[1, 2])
-    return (utadisvaluefunc,df)
+    return (valuefunc,dfutadis)
 
-def GermanDataTopsis(df,utastarvaluefun,utadisvaluefunc):
-
+def GermanDataTopsis(df,weights):
     ########### TOPSIS #################
     (epsilon,performanceTable,alternativesRanks,criteriaMinMax,bpdata,criteriaNumberOfBreakPoints)=inputsMCDA(df,2)
 
-    # TOPSIS with UTASTAR weights
-    weights = utastarvaluefun
+    #Topsis with Utastar weights
     weights = pd.DataFrame(weights)
     
+    #Topsis Results
     overall1 = TOPSIS(performanceTable, weights, criteriaMinMax)
     overall1 = overall1.transpose()
-    #print(overall1)
 
-    classdf=df.iloc[1:,:-2]
-    y=classdf.columns.get_loc("Class")
+    #Insert Class
+    y=df.columns.get_loc("Class")
+    overall1.insert(1,"Class",df.iloc[:,y])
 
-    overall1.insert(1,"Class",classdf.iloc[:,y])
-
+    #Sort by scores
     overall1 = overall1.sort_values(by=['Solution'] , ascending=False)
-    overall1 = overall1.reset_index()
-    #overall1 = overall1.drop("index")
+    #overall1 = overall1.reset_index()
 
-    nrows=df.shape[0]
-    accur = [1 for x in range(1, overall1.shape[0]) if (x<302 and overall1.iloc[x,2] == 1)   ]
-    accur2 = [1 for x in range(1, overall1.shape[0]) if (x>301 and overall1.iloc[x,2]==2) ]
+ ##lower bound
+    dft = dfutadis[dfutadis["Class"]==2].idxmin() # or min  check data 
+    cined = dfutadis.columns.get_loc("OverallValues")
+    indx = dft["Class"]
+    lower_bound = dfutadis.iloc[indx,cined]
+    #print("Lower Bound value for utadis-->",
 
-    print("Topsis with Utastar Weights Accuracy",sum(accur+accur2)/nrows)
+    #Lower bound 
+    
+    nrows= overall1.shape[0]
+    y3=overall1.columns.get_loc("Solution")
+    print(overall1)
+    dft= overall1[overall1["Class"]==2].idxmin()
+    print(dft)
+    indx = overall1["Class"]
+    print(indx)
 
+    lbound = overall1.iloc[indx,y3]
+
+    predtopsis1 = [0 if df.iloc[x,y3]>lbound else 1 for x in range(0, nrows) ]
+
+    ##Valuefunction distribution 
     ncols= performanceTable.shape[1]
-
-    topsisdf  = performanceTable
+    topsisdf  = performanceTable.copy()
 
     for i in range(0,nrows):
         topsisdf.iloc[i,:ncols] = overall1.iloc[i,1] * weights.values.flatten()
@@ -420,50 +453,13 @@ def GermanDataTopsis(df,utastarvaluefun,utadisvaluefunc):
 
     topsisdf.insert(topsisdf.shape[1],"Solution",overall1.iloc[:,1])
     topsisdf.insert(topsisdf.shape[1],"Class",overall1.iloc[:,2])
-    #print(topsisdf)
 
-    topsisdf.to_excel(r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\TOPSISUtastarResults.xlsx")
+    topsisdf.to_excel(datapath+r"\ResultsUtastar\TOPSISResults.xlsx")
 
+    topsisdf.insert(df.shape[1], "Pred", predtopsis1)
 
-    # TOPSIS with UTADIS weights
-    weights = utadisvaluefunc
-    weights = pd.DataFrame(weights)
-
-
-    overall2 = TOPSIS(performanceTable.iloc[:,0:-2], weights, criteriaMinMax)
-    overall2 = overall2.transpose()
-
-    #print(overall2)
-
-
-
-    classdf=df.iloc[1:,:-2]
-    y=classdf.columns.get_loc("Class")
-
-    overall2.insert(1,"Class",classdf.iloc[:,y])
-
-    overall2 = overall2.sort_values(by=['Solution'] , ascending=False)
-    overall2 = overall2.reset_index()
-    #overall1 = overall1.drop("index")
-
-    accur = [1 for x in range(1, overall2.shape[0]) if (x<302 and overall2.iloc[x,2] == 1)   ]
-    accur2 = [1 for x in range(1, overall2.shape[0]) if (x>301 and overall2.iloc[x,2]==2) ]
-
-    print("Topsis with Utadis Weights Accuracy",sum(accur+accur2)/nrows)
-
-
-    ncols= performanceTable.shape[1]
-
-    topsisdf2  = performanceTable.iloc[:,0:-2]
-
-    for i in range(0,nrows):
-        topsisdf2.iloc[i,:ncols] = overall2.iloc[i,1] * weights.values.flatten()
-
-    topsisdf2.insert(topsisdf2.shape[1],"Solution",overall2.iloc[:,1])
-    topsisdf2.insert(topsisdf2.shape[1],"Class",overall2.iloc[:,2])
-    #print(topsisdf)
-
-    topsisdf2.to_excel(r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\TOPSISUtadisResults.xlsx")
+    print("Topsis lower bound -> ",lbound)
+    return(topsisdf)
 
 #Feauture reduction
 
@@ -509,7 +505,7 @@ def UtastarfeatureReduc(df):
 def UtadisFeatureReduc():
 
     #import Credit score resutls
-    df = pd.read_excel(r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\UtadisResults.xlsx",)
+    df = pd.read_excel(datapath + r"\ResultsUtastar\UtadisResults.xlsx",)
 
     dfval = df
     dfclass = df.iloc[1:,1:] #-2
@@ -549,9 +545,9 @@ def UtadisFeatureReduc():
 
 def TopsisFeautreReduc():
 
-    dftopsis = pd.read_excel(r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\TOPSISUtastarResults.xlsx")
+    dftopsis = pd.read_excel(datapath + r"\ResultsUtastar\TOPSISUtastarResults.xlsx")
 
-    dftopsis = pd.read_excel(r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\TOPSISUtadisResults.xlsx")
+    dftopsis = pd.read_excel(datapath + r"\ResultsUtastar\TOPSISUtadisResults.xlsx")
 
 
    # dfclass=dfclass[l]
@@ -700,7 +696,7 @@ def kmeansmcda(dfall):
 
     #####to excel alternatives results 
     dfall.to_excel(
-        r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI\ResultsUtastar\UtastarKmeansAltResults.xlsx")
+        datapath + r"\ResultsUtastar\UtastarKmeansAltResults.xlsx")
 
         
     ####spectral clustering 
@@ -802,30 +798,8 @@ def kmeansfeautreReduc(dfall):
 
     ##### to excel feautres results
     dfclassT.to_excel(
-        r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI\ResultsUtastar\KmeansFeautResults.xlsx")
+        datapath + r"\ResultsUtastar\KmeansFeautResults.xlsx")
 
-def accurMatrix(dfclass,y_kmeans):
-        
-    ########confusion mattrix for accurancy calculation visulization###################
-    from sklearn.metrics import confusion_matrix,accuracy_score
-
-    #values transformation 
-    true_v = [0 if x==1 else 1 for x in dfclass["Class"]]
-    print("Num of Class 1 in dataset-->",480-sum(true_v),"/480")
-
-    true_v = [0 if x<301 else 1 for x in range(0,479)]
-    y_kmeans =  [0 if x<230 else 1 for x in range(0,479)]
-
-    acc= accuracy_score(true_v, y_kmeans, normalize=True, sample_weight=None)
-    print("Accurancy->",  acc)
-    #have to input outranks and create the predicted classification from boundries
-    mat = confusion_matrix(true_v ,y_kmeans,)
-    sns.heatmap(mat.T, square=True, annot=True, fmt='d', cbar=False),
-            # xticklabels=dfclass.columns,
-            # yticklabels=dfclass.index)
-    plt.xlabel('true label')
-    plt.ylabel('predicted label')
-    
 def shillouteplot(df):
     #######################Silhouette plot #####################################
     
@@ -980,30 +954,36 @@ def main():
     #Visuals-ok
     #HistogramAndHitmapPlots(df)
 
-    #Utastar-ok
-    (valuefunc,utastardf) = GermanDataUtastar(df)
 
+    #Utastar-ok
+    (valuefunc,utastardf) = GermanDataUtastar(df.copy())
     #HistogramAndHitmapPlots(utastardf.iloc[1:,:-3])-not usefull
 
     #Utadis-ok
-    valuefunc2,utadisdf = GermanDataUtadis(df)
+    valuefunc2,utadisdf = GermanDataUtadis(df.copy())
+   
+    #Topsis -Utastar-ok
+    print("--Topsis with Utastar Weights--")
+    GermanDataTopsis(df.copy(),valuefunc)
 
-    #Topsis -ok
-    GermanDataTopsis(df,valuefunc,valuefunc2)
+    #Topsis - Utadis-ok
+    print("--Topsis with Utadis weights--")
+    GermanDataTopsis(df.copy(),valuefunc2)
+
 
     #k-means on original dataset - ongoing
-    print("K-means original data")
-    kmeansmcda(df)#-ok
+   # print("K-means original data")
+    #kmeansmcda(df)#-ok
     #print(df)
     
     #Utastar and kmeans  before reduction
-    print("Utastar - Kmeans")
-    kmeansmcda(utastardf)
+    #print("Utastar - Kmeans")
+    #kmeansmcda(utastardf)
 
     #TODO
     #Utadis and kmeans before reduction
     #print(utadisdf)
-    kmeansmcda(utadisdf.iloc[:,:-1])
+    #kmeansmcda(utadisdf.iloc[:,:-1])
     #Topsis and kmeans befrore reduction 
 
 

@@ -11,6 +11,12 @@ from  Pyth.UTASTAR import *
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
+datapath = r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\Taiwan Dataset"
+#datapath = r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\Taiwan Dataset"
+
+
+
 # Histogram and Heat Map Plots
 def HistogramAndHitmapPlots(df):
         
@@ -39,7 +45,7 @@ def HistogramAndHitmapPlots(df):
 def taiwanDataLoadPreProssecing():
 
     df = pd.read_excel(
-    r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\Taiwan Dataset\default of credit card clients.xls",
+    datapath + r"\default of credit card clients.xls",
     sheet_name="Data",)
         
     #pre prossesing 
@@ -242,7 +248,7 @@ def taiwanUtastar(df):
 
     print(df)
     df.to_excel(
-        r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\Taiwan Dataset\UtastarResults.xlsx"
+        datapath + r"\UtastarResults.xlsx"
     )
     print(outRanks)
     print("Accuracy",1 -sum(accur+accur2)/nrows)

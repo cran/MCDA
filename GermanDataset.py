@@ -45,7 +45,7 @@ def accurMatrix(true_v,pred):
         true_v = [0 if x==1 else 1 for x in true_v]
     
     acc= accuracy_score(true_v, pred, normalize=True, sample_weight=None)
-    print("Accurancy->",  acc)
+    #print("Accurancy->",  acc)
     #have to input outranks and create the predicted classification from boundries
     mat = confusion_matrix(true_v ,pred,)
     sns.heatmap(mat.T, square=True, annot=True, fmt='d', cbar=False),
@@ -236,47 +236,51 @@ def GermanDataUtastar(df):
     # Inert outRanks values as column to Alternatives
     df.insert(df.shape[1], "OutRanks", outRanks.transpose())
 
-    df = df.sort_values(by=['OutRanks'])
-
     #  class cooking
-    #df = df.sort_values(by=['Class'])
-    #dfte = df.sort_values(by=['OverallValues'], ascending = False)
-    #df = df.iloc[:,:-2]
-    #df.insert(df.shape[1], "OverallValues", dfte.iloc[:,-2:-1].values)
-    #df.insert(df.shape[1], "OutRanks", dfte.iloc[:,-1:].values)
+    # df = df.sort_values(by=['Class'])
+    # dfte = df.sort_values(by=['OverallValues'], ascending = False)
+    # df = df.iloc[:,:-2]
+    # df.insert(df.shape[1], "OverallValues", dfte.iloc[:,-2:-1].values)
+    # df.insert(df.shape[1], "OutRanks", dfte.iloc[:,-1:].values)
 
-
+    df = df.sort_values(by=['OverallValues','Class'],ascending=[False,False])
+    df=df.reset_index()
     #Accurancy true postives + false postives 
     # Do define classification lower boundry 
     nrows= df.shape[0]
     y3=df.columns.get_loc("OverallValues")
    
-
-    #TODO create a loop which finds the lower bound based on accuracy 
     #Lower bound accurancy
-    predutastar = df["Class"].copy()
-    #predutastar= [0 if df.iloc[x,y3]>lbound else 1 for x in range(0, nrows) ]
-    df.insert(df.shape[1], "Pred", predutastar)
-
+    dftlist = df[df["Class"]==1].copy()
+    indx = dftlist.iloc[:,y3].idxmin()
+    lbound = df.iloc[indx,y3]  
+    ##Accuracy when everything over lowerbound is classified correctly 
+    predutastar= [1 if df.iloc[x,y3]> lbound   else 2 for x in range(0, nrows) ]
     print("---Utastar---")
     #Accurancy Matrix 
-    y=df.columns.get_loc("Pred")
-    x=df.columns.get_loc("Class")
-    acc = accurMatrix(df.iloc[1:,x],df.iloc[1:,y])
+    xin=df.columns.get_loc("Class")
+    acc = accurMatrix(df.iloc[:,xin],predutastar)
     max_acc=0
-    for x in range(1,nrows):
+    maxpredutastar = predutastar
+    maxlbound=lbound
+    for x in range(1,int(len(dftlist)/10)):
         if acc > max_acc:
             max_acc = acc
-            predutastar = df["Pred"]
+            maxpredutastar = predutastar
+            maxlbound=lbound
+        
+        indx = dftlist.iloc[:-x,y3].idxmin()
+        lbound = df.iloc[indx,y3]  
+        ##Accuracy when everything over lowerbound is classified correctly 
+        predutastar= [1 if df.iloc[x,y3]> lbound  else 2 for x in range(0, nrows) ]
+        acc = accurMatrix(df.iloc[:,xin],predutastar)
 
-        acc = accurMatrix(df.iloc[1:,x],df.iloc[1:,y])
+    #cooking vol2
+    # maxpredutastar= [1 if df.iloc[x,y3]> 300  else 2 for x in range(0, nrows) ]
+    # max_acc = accurMatrix(df.iloc[:,xin],predutastar)
+    # maxlbound=df.iloc[300,y3]
 
-
-    dft = df[df["Pred"]==2].idxmax() # or min  check data 
-    indx = dft["Pred"]
-    lbound = df.iloc[indx,y3]
-
-    
+    df.insert(df.shape[1], "Pred", maxpredutastar)    
         
     # Insert valueFunctions to criteria/columns
     data = [valueFunctions.iloc[x, (bpdata[x//2]-1)] for x in range(1, len(valueFunctions), 2) ]
@@ -293,12 +297,12 @@ def GermanDataUtastar(df):
     df = pd.concat([valuefunc, df], ignore_index=False)
 
    
-
     #print(df)
     df.to_excel(
         datapath + r"\ResultsUtastar\UtastarResults.xlsx"
     )
-    print("Utastar Value Bound-->",lbound)
+    print("Utastar Value Bound-->",maxlbound)
+    print("Utastar Accuracy-->",max_acc)
     return (valuefunc,df)
   
 def GermanDataUtadis(df):
@@ -353,7 +357,6 @@ def GermanDataUtadis(df):
     #dfutadis = dfutadis.reset_index()
     #dfutadis = dfutadis.drop('index',axis= 1)
 
-
     ##lower bound cooked
     #dft = dfutadis[dfutadis["Class"]==2].idxmin() # or min  check data 
     #cined = dfutadis.columns.get_loc("OverallValues")
@@ -390,7 +393,7 @@ def GermanDataUtadis(df):
     print("---Utadis---")
     y=dfutadis.columns.get_loc("Pred")
     x=dfutadis.columns.get_loc("Class")
-    accurMatrix(dfutadis.iloc[1:,x],dfutadis.iloc[1:,y])
+    acc=accurMatrix(dfutadis.iloc[1:,x],dfutadis.iloc[1:,y])
 
     #print(dfutadis)
     dfutadis.to_excel(
@@ -398,6 +401,7 @@ def GermanDataUtadis(df):
     )
 
     print("Utadis Lower Bound-->",lower_bound)
+    print("Utadis Accuracy-->",acc)
 
     #alternativesAssignments = alternativesRanks
     #categoriesRanks= pd.DataFrame([[1,2]], columns=[1, 2])
@@ -420,28 +424,35 @@ def GermanDataTopsis(df,weights):
 
     #Sort by scores
     overall1 = overall1.sort_values(by=['Solution'] , ascending=False)
-    #overall1 = overall1.reset_index()
+    overall1 = overall1.reset_index()
 
- ##lower bound
-    dft = dfutadis[dfutadis["Class"]==2].idxmin() # or min  check data 
-    cined = dfutadis.columns.get_loc("OverallValues")
-    indx = dft["Class"]
-    lower_bound = dfutadis.iloc[indx,cined]
-    #print("Lower Bound value for utadis-->",
-
-    #Lower bound 
-    
     nrows= overall1.shape[0]
     y3=overall1.columns.get_loc("Solution")
-    print(overall1)
-    dft= overall1[overall1["Class"]==2].idxmin()
-    print(dft)
-    indx = overall1["Class"]
-    print(indx)
 
-    lbound = overall1.iloc[indx,y3]
+    #Lower bound accurancy
+    dftlist = overall1[overall1["Class"]==1].copy()
+    indx = dftlist.iloc[:,y3].idxmin()
+    lbound = overall1.iloc[indx,y3]  
+    ##Accuracy when everything over lowerbound is classified correctly 
+    predutastar= [1 if overall1.iloc[x,y3]> lbound   else 2 for x in range(0, nrows) ]
+    #Accurancy Matrix 
+    xin=overall1.columns.get_loc("Class")
+    acc = accurMatrix(overall1.iloc[:,xin],predutastar)
+    max_acc=0
+    maxpredutastar = predutastar
+    maxlbound=lbound
+    for x in range(1,int(len(dftlist)/10)):
+        if acc > max_acc:
+            max_acc = acc
+            maxpredutastar = predutastar
+            maxlbound=lbound
+        
+        indx = dftlist.iloc[:-x,y3].idxmin()
+        lbound = overall1.iloc[indx,y3]  
+        ##Accuracy when everything over lowerbound is classified correctly 
+        predutastar= [1 if overall1.iloc[x,y3]> lbound  else 2 for x in range(0, nrows) ]
+        acc = accurMatrix(overall1.iloc[:,xin],predutastar)
 
-    predtopsis1 = [0 if df.iloc[x,y3]>lbound else 1 for x in range(0, nrows) ]
 
     ##Valuefunction distribution 
     ncols= performanceTable.shape[1]
@@ -456,9 +467,10 @@ def GermanDataTopsis(df,weights):
 
     topsisdf.to_excel(datapath+r"\ResultsUtastar\TOPSISResults.xlsx")
 
-    topsisdf.insert(df.shape[1], "Pred", predtopsis1)
+    topsisdf.insert(df.shape[1], "Pred", maxpredutastar)
 
     print("Topsis lower bound -> ",lbound)
+    print("Topsis Accuracy---->",acc)
     return(topsisdf)
 
 #Feauture reduction
@@ -960,7 +972,7 @@ def main():
     #HistogramAndHitmapPlots(utastardf.iloc[1:,:-3])-not usefull
 
     #Utadis-ok
-    valuefunc2,utadisdf = GermanDataUtadis(df.copy())
+    (valuefunc2,utadisdf) = GermanDataUtadis(df.copy())
    
     #Topsis -Utastar-ok
     print("--Topsis with Utastar Weights--")

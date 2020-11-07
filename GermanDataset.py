@@ -473,7 +473,7 @@ def GermanDataTopsis(df,weights):
     print("Topsis Accuracy---->",acc)
     return(topsisdf)
 
-#Feauture reduction
+#Feauture reduc   tion
 
 def UtastarfeatureReduc(df):
    
@@ -577,7 +577,7 @@ def kmeansmcda(dfall):
     #KMeans class from the sklearn library.
 
     #table with class
-    dfclass = dfall.iloc[:,:-2]
+    dfclass = dfall
 
     #only table 
     df = dfclass.iloc[:,:-1]
@@ -609,6 +609,8 @@ def kmeansmcda(dfall):
     #plt.xlabel('Number of clusters')
     #plt.ylabel('WCSS')
     #plt.show()
+
+    # Half dataset
 
     """#5 According to the Elbow graph we deterrmine the clusters number as #5. Applying k-means algorithm to the X dataset.
     kmeans = KMeans(n_clusters=2, init ='k-means++', max_iter=300, n_init=10,random_state=0 )
@@ -664,10 +666,10 @@ def kmeansmcda(dfall):
 
     ####k-fold cross validation score 
     scores = cross_val_score(kmeans, Y, y, cv=5)
-    print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+    # print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
     scores = cross_val_predict(kmeans, Y, y, cv=5)
-    print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+    # print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
     #6 Visualising the clusters based on prediction 
 
@@ -699,12 +701,18 @@ def kmeansmcda(dfall):
     #for alternatives
     dfall.insert(dfall.shape[1],"Pred",y_kmeans)
 
-    dft = dfall[dfall["Pred"]==1].idxmax() # 0 for utastar or min  check data 
+    dft = dfall[dfall["Pred"]==0].idxmin() # 0 for utastar or min  check data 
     #indx = dft["OutRanks"] # for utastar 
     indx = dft["Pred"] # for utadis
-    cined = dfall.columns.get_loc("OverallValues")
+    cined = dfall.columns.get_loc("Pred")
     lower_bound = dfall.iloc[indx,cined]
+
+    xin=dfall.columns.get_loc("Class")
+    acc = accurMatrix(dfall.iloc[:,xin],y_kmeans)
+  
+
     print("Lower Bound value for cluster-->",lower_bound)
+    print("K-Means Accuracy--->",acc)
 
     #####to excel alternatives results 
     dfall.to_excel(
@@ -984,9 +992,8 @@ def main():
 
 
     #k-means on original dataset - ongoing
-   # print("K-means original data")
-    #kmeansmcda(df)#-ok
-    #print(df)
+    print("K-means original data")
+    kmeansmcda(df.copy())#-ok
     
     #Utastar and kmeans  before reduction
     #print("Utastar - Kmeans")

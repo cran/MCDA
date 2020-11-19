@@ -295,7 +295,7 @@ def GermanDataUtastar(df):
 
     #Append valuefunc row 
     df = pd.concat([valuefunc, df], ignore_index=False)
-
+    df=df.drop(['index'], axis=1)
    
     #print(df)
     df.to_excel(
@@ -479,7 +479,7 @@ def UtastarfeatureReduc(df):
    
     dfval = df
     #table without valuefunc
-    dfclass = df.iloc[1:,:] #-2
+    dfclass = df.iloc[1:,:] 
     dfclass = dfclass.reset_index(drop=True)
 
     #table without valuefunc and class/outranks/overallvalue
@@ -495,7 +495,7 @@ def UtastarfeatureReduc(df):
 
     for x in range(0,len(dfval)):
         dfvalt = dfval.iloc[:-x,:]
-        if  sum(dfvalt.values)>0.82 and sum(dfvalt.values)<0.92 : # was 82 and 92 utastar/ 0 and 0.25 utadis
+        if  sum(dfvalt.values)>0.82 and sum(dfvalt.values)<0.90 : # was 82 and 92 utastar/ 0 and 0.25 utadis
             dfval = dfval.iloc[:-x,:]
             
 
@@ -508,41 +508,35 @@ def UtastarfeatureReduc(df):
     l= list(dfval.index)
     l.append("Class")
     l.append("OverallValues")
-    #l.append("OutRanks")
 
     dfclass=dfclass[l]
     return dfclass
-    #print(dfclass)
 
-def UtadisFeatureReduc():
+def UtadisFeatureReduc(df):
 
     #import Credit score resutls
-    df = pd.read_excel(datapath + r"\ResultsUtastar\UtadisResults.xlsx",)
-
     dfval = df
-    dfclass = df.iloc[1:,1:] #-2
-    #dfclass = dfclass.drop(["telephone"],axis=1)
-    #dfclass = dfclass.drop(["foreign"],axis=1)
+    dfclass = df.iloc[1:,:]
     dfclass = dfclass.reset_index(drop=True)
 
-    df = df.iloc[1:,1:-2]## adjusted for removed columns -3 for utastar -2 for utadis
-
+    df = df.iloc[1:,:-2]## adjusted for removed columns -3 for utastar -2 for utadis
     df = df.reset_index(drop=True)
 
     ###########feautre reduction##############
-    dfval=dfval.iloc[0,1:-2]#-3 for utastar -2 for utadis
+    dfval=dfval.iloc[0,:-2]
     dfval= pd.DataFrame(dfval)
-    dfval = dfval.sort_values( by=[0], ascending=False)
+    print("\nDimensions Before\n",dfval)
+    dfval = dfval.sort_values( by=["ValueFunc"], ascending=False)
 
 
     for x in range(0,len(dfval)):
         dfvalt = dfval.iloc[:-x,:]
-        if  sum(dfvalt.values)>0.82 and sum(dfvalt.values)<0.92 : # was 82 and 92 utastar/ 0 and 0.25 utadis
+        if  sum(dfvalt.values)>0.80 and sum(dfvalt.values)<0.90: # was 82 and 92 utastar/ 0 and 0.25 utadis
             dfval = dfval.iloc[:-x,:]
             
 
-    print(sum(dfval.values))
-    print(dfval)
+    print("\nValue Functions weight SUM:",sum(dfval.values))
+    print("Dimensions after Reduction\n",dfval)
 
 
     dfval = dfval.iloc[:-1,:]## custom one use 
@@ -551,25 +545,10 @@ def UtadisFeatureReduc():
     l= list(dfval.index)
     l.append("Class")
     l.append("OverallValues")
-    #l.append("OutRanks")
 
     dfclass=dfclass[l]
+    return dfclass
 
-def TopsisFeautreReduc():
-
-    dftopsis = pd.read_excel(datapath + r"\ResultsUtastar\TOPSISUtastarResults.xlsx")
-
-    dftopsis = pd.read_excel(datapath + r"\ResultsUtastar\TOPSISUtadisResults.xlsx")
-
-
-   # dfclass=dfclass[l]
-
-    #topsis implementation 
-    #df=dftopsis[df.columns.values]
-
-    #dfclass["OverallValues"]= dftopsis["Solution"]
-    #dfclass=dfclass.iloc[:,:-1]
-    #dfclass["Class"]=dftopsis["Class"]
 
 #kmeans and visualization for clustering/classification
 def kmeansmcda(dfall):
@@ -688,9 +667,10 @@ def kmeansmcda(dfall):
 
     plt.show()
 
-
+    ncol=int(Y.shape[1]/2)
+    
     #credit score values
-    plt.scatter(Y.iloc[:,:10],Y.iloc[:,10:],alpha = 0.5)
+    plt.scatter(Y.iloc[:,:ncol],Y.iloc[:,ncol:],alpha = 0.5)
 
     plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
     plt.title('Clusters k-means')
@@ -968,59 +948,87 @@ def pcaAnalysis(df):
 
 #### Main ###
 def main():
+
     #German Dataset
     df = GermanDataLoadPreProssecing()
-
-    #Visuals-ok
+    
+    # Dimensions Visuals 
     #HistogramAndHitmapPlots(df)
 
+    ############# Before Feauture Reduction ###########
+    ######### MCDA 
 
-    #Utastar-ok
+    #Utastar
     (valuefunc,utastardf) = GermanDataUtastar(df.copy())
     #HistogramAndHitmapPlots(utastardf.iloc[1:,:-3])-not usefull
-
-    #Utadis-ok
+    
+    #Utadis
     (valuefunc2,utadisdf) = GermanDataUtadis(df.copy())
    
-    #Topsis -Utastar-ok
+    #Topsis -Utastar
     print("--Topsis with Utastar Weights--")
-    GermanDataTopsis(df.copy(),valuefunc)
-
-    #Topsis - Utadis-ok
-    print("--Topsis with Utadis weights--")
-    GermanDataTopsis(df.copy(),valuefunc2)
-
-
-    #k-means on original dataset - ongoing
-    print("K-means original data")
-    kmeansmcda(df.copy())#-ok
+    utastar_topsis = GermanDataTopsis(df.copy(),valuefunc)
     
-    #Utastar and kmeans  before reduction
-    #print("Utastar - Kmeans")
-    #kmeansmcda(utastardf)
+    #Topsis - Utadis
+    print("--Topsis with Utadis weights--")
+    utadis_topsis = GermanDataTopsis(df.copy(),valuefunc2)
 
-    #TODO
-    #Utadis and kmeans before reduction
-    #print(utadisdf)
-    #kmeansmcda(utadisdf.iloc[:,:-1])
+    ####### K-means and combinations 
+
+    ## k-means on original dataset 
+    # print("K-means original data")
+    # kmeansmcda(df.copy())
+    
+    ## Utastar and kmeans  
+    # print("Utastar - Kmeans")
+    # kmeansmcda(utastardf.iloc[1:,:-3].copy())
+
+    ## Utadis and kmeans 
+    # print("Utadis - Kmeans")
+    # kmeansmcda(utadisdf.iloc[1:,:-2].copy())
+
     #Topsis and kmeans befrore reduction 
+    # print("Utastar Topsis - kmeans")
+    # utastar_topsis  = utastar_topsis.drop(['Solution','Pred'],axis=1)
+    # kmeansmcda(utastar_topsis.copy())
 
+    #Topsis and kmeans befrore reduction 
+    # print("Utadis Topsis - kmeans")
+    # utadis_topsis  = utadis_topsis.drop(['Solution','Pred'],axis=1)
+    # kmeansmcda(utadis_topsis.copy())
 
+    ###########  Feature reduction ###########
     #Utastar Reduction
-    #dfR=UtastarfeatureReduc(utastardf)
+    dfR=UtastarfeatureReduc(utastardf.copy())
 
     #Utadis Reduction
-
-    #Topsis Reduction
-
+    dfU = UtadisFeatureReduc(utadisdf.copy())
+    
+    # TODO 
     #K-means Reduction
-    #kmeansfeautreReduc(df)
+    #kmeansfeautreReduc(utastardf)
 
-    #Utastar and k-means classification
 
-    #Utadis and k-means classification
+    #TODO 
+    ######### MCDA and Kmeans After Feautre reduction ##########
 
-    #Topsis and k-means classification
+    ## Utastar and kmeans  
+    print("Utastar - Kmeans")
+    kmeansmcda(dfR.iloc[:,:-1].copy())
+
+    ## Utadis and kmeans 
+    print("Utadis - Kmeans")
+    kmeansmcda(dfU.iloc[:,:-1].copy())
+
+    #Topsis and kmeans befrore reduction 
+    # print("Utastar Topsis - kmeans")
+    # utastar_topsis  = utastar_topsis.drop(['Solution','Pred'],axis=1)
+    # kmeansmcda(utastar_topsis.copy())
+
+    #Topsis and kmeans befrore reduction 
+    # print("Utadis Topsis - kmeans")
+    # utadis_topsis  = utadis_topsis.drop(['Solution','Pred'],axis=1)
+    # kmeansmcda(utadis_topsis.copy())
     
     print("\n-----German Dataset End----------")
 

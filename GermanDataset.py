@@ -37,22 +37,26 @@ import matplotlib.cm as cm
 datapath = r"E:\Google Drive\PC SHIT\HMMY\Diplomatiki\german credit score dataset UCI"
 #datapath = r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\german credit score dataset UCI"
 
-def accurMatrix(true_v,pred):
+def accurMatrix(true_v,pred,prnt=False):
     ########confusion mattrix for accurancy calculation visulization###################
     #values transformation 
-    
-    if all(true_v.unique() == [1,2]):
-        true_v = [0 if x==1 else 1 for x in true_v]
-    
+    if(set(true_v.unique()) == set([1,2])):
+        true_v = [1 if x==1 else 0 for x in true_v]
+
+    if(set(pred) == set([1,2])):
+        pred = [1 if x==1 else 0 for x in pred]
+
+
     acc= accuracy_score(true_v, pred, normalize=True, sample_weight=None)
     #print("Accurancy->",  acc)
     #have to input outranks and create the predicted classification from boundries
-    mat = confusion_matrix(true_v ,pred,)
-    sns.heatmap(mat.T, square=True, annot=True, fmt='d', cbar=False),
-            #xticklabels=true_v.columns,
-            #ticklabels=true_v.index)
-    plt.xlabel('true label')
-    plt.ylabel('predicted label')
+    if(prnt==True):
+        mat = confusion_matrix(true_v ,pred,)
+        sns.heatmap(mat.T, square=True, annot=True, fmt='d', cbar=False),
+                #xticklabels=true_v.columns,
+                #ticklabels=true_v.index)
+        plt.xlabel('true label')
+        plt.ylabel('predicted label')
     return(acc)
     
 ####Pre Processing dataset ######
@@ -202,7 +206,7 @@ def inputsMCDA(df,flag):
 
     return(epsilon,performanceTable,alternativesRanks,criteriaMinMax,bpdata,criteriaNumberOfBreakPoints)
 
-def GermanDataUtastar(df):
+def GermanDataUtastar(df,prnt=False):
     ###################### UTASTAR  #########################
 
     #Performance table, alternative ranks , criteria min max and bp data
@@ -275,6 +279,9 @@ def GermanDataUtastar(df):
         predutastar= [1 if df.iloc[x,y3]> lbound  else 2 for x in range(0, nrows) ]
         acc = accurMatrix(df.iloc[:,xin],predutastar)
 
+
+    acc=accurMatrix(df.iloc[:,xin],maxpredutastar,prnt)
+
     #cooking vol2
     # maxpredutastar= [1 if df.iloc[x,y3]> 300  else 2 for x in range(0, nrows) ]
     # max_acc = accurMatrix(df.iloc[:,xin],predutastar)
@@ -292,6 +299,12 @@ def GermanDataUtastar(df):
     ncols= performanceTable.shape[1]
     for i in range(0,nrows):
         df.iloc[i,0:ncols] = df.iloc[i,-2] * valuefunc.values.flatten()
+    if (prnt==True):
+        print("Utastar Max Overall Value -->",max(df["OverallValues"]))
+        print("Utastar Min Overall Value -->",min(df["OverallValues"]))
+        print("Utastar Classification Value Bound-->",maxlbound)
+        print("Utastar Accuracy-->",max_acc)
+        print(round(valuefunc.transpose()*100,2))
 
     #Append valuefunc row 
     df = pd.concat([valuefunc, df], ignore_index=False)
@@ -301,11 +314,10 @@ def GermanDataUtastar(df):
     df.to_excel(
         datapath + r"\ResultsUtastar\UtastarResults.xlsx"
     )
-    print("Utastar Value Bound-->",maxlbound)
-    print("Utastar Accuracy-->",max_acc)
+  
     return (valuefunc,df)
   
-def GermanDataUtadis(df):
+def GermanDataUtadis(df,prnt=False):
 
     (epsilon,performanceTable,alternativesRanks,criteriaMinMax,bpdata,criteriaNumberOfBreakPoints)=inputsMCDA(df,2)
 
@@ -386,28 +398,32 @@ def GermanDataUtadis(df):
     for i in range(0,nrows):
         dfutadis.iloc[i,:ncols] = dfutadis.iloc[i,-1] * valuefunc.values.flatten()
 
-    #Append valuefunc row 
-    dfutadis = pd.concat([valuefunc, dfutadis], ignore_index=False)
-    
     ##Accuracy 
     print("---Utadis---")
     y=dfutadis.columns.get_loc("Pred")
     x=dfutadis.columns.get_loc("Class")
-    acc=accurMatrix(dfutadis.iloc[1:,x],dfutadis.iloc[1:,y])
+    acc=accurMatrix(dfutadis.iloc[:,x],dfutadis.iloc[:,y],prnt)
 
+    if (prnt==True):
+        print("Utadis Max Overall Value -->",max(dfutadis["OverallValues"]))
+        print("Utadis Min Overall Value -->",min(dfutadis["OverallValues"]))
+        print("Utadis Classification Value Bound-->",lower_bound)
+        print("Utadis Accuracy-->",acc)
+        print(round(valuefunc.transpose()*100,2))
+
+    #Append valuefunc row 
+    dfutadis = pd.concat([valuefunc, dfutadis], ignore_index=False)
+    
     #print(dfutadis)
     dfutadis.to_excel(
         datapath + r"\ResultsUtastar\UtadisResults.xlsx"
     )
 
-    print("Utadis Lower Bound-->",lower_bound)
-    print("Utadis Accuracy-->",acc)
-
     #alternativesAssignments = alternativesRanks
     #categoriesRanks= pd.DataFrame([[1,2]], columns=[1, 2])
     return (valuefunc,dfutadis)
 
-def GermanDataTopsis(df,weights):
+def GermanDataTopsis(df,weights,prnt=False):
     ########### TOPSIS #################
     (epsilon,performanceTable,alternativesRanks,criteriaMinMax,bpdata,criteriaNumberOfBreakPoints)=inputsMCDA(df,2)
 
@@ -453,6 +469,7 @@ def GermanDataTopsis(df,weights):
         predutastar= [1 if overall1.iloc[x,y3]> lbound  else 2 for x in range(0, nrows) ]
         acc = accurMatrix(overall1.iloc[:,xin],predutastar)
 
+    acc = accurMatrix(overall1.iloc[:,xin],maxpredutastar,prnt)
 
     ##Valuefunction distribution 
     ncols= performanceTable.shape[1]
@@ -468,9 +485,12 @@ def GermanDataTopsis(df,weights):
     topsisdf.to_excel(datapath+r"\ResultsUtastar\TOPSISResults.xlsx")
 
     topsisdf.insert(df.shape[1], "Pred", maxpredutastar)
+    if (prnt==True):
+        print("Topsis Max Overall Value -->",max(topsisdf["Solution"]))
+        print("Topsis Min Overall Value -->",min(topsisdf["Solution"]))
+        print("Topsis Classification Value Bound-->",lbound)
+        print("Topsis Accuracy-->",acc)
 
-    print("Topsis lower bound -> ",lbound)
-    print("Topsis Accuracy---->",acc)
     return(topsisdf)
 
 #Feauture reduc   tion
@@ -551,34 +571,40 @@ def UtadisFeatureReduc(df):
 
 
 #kmeans and visualization for clustering/classification
-def kmeansmcda(dfall):
+def kmeansmcda(dfall,mcda=False):
     ################### k means for feautre/alternatives  reduction ##############
     #KMeans class from the sklearn library.
-
+    # print(dfall)
     #table with class
-    dfclass = dfall
+    dfclass = dfall    
 
     #only table 
-    df = dfclass.iloc[:,:-1]
+    if (mcda==False):
+        
+        df = dfclass.iloc[:,:-1]
+        ###nromalization if needed
+        scaler = MinMaxScaler(feature_range=(0, 1))
+        Y=df
+        Y = scaler.fit_transform(Y)
+        Y=pd.DataFrame(Y)
+    else:
+
+        ov=dfclass.columns.get_loc("OverallValues")
+        df = dfall.iloc[:,:-4]
+        Y=df
 
     #assign whole table for k-means 
-    Y=df
+    ncol=int(Y.shape[1]/2)
     wcss=[]
 
     #Half table for k-means 
-    #X = df.iloc[:240,:] #.transpose().values 
-    y=dfclass["Class"]
-
-    ###nromalization if needed
-    #scaler = MinMaxScaler(feature_range=(0, 1))
-    #X = scaler.fit_transform(X)
-
+    #y=dfclass["Class"]
+    cl=dfclass.columns.get_loc("Class")
+    
     ## Kmeans cluster training / cluster finding
     for i in range(1,11): 
         kmeans = KMeans(n_clusters=i, init ='k-means++', max_iter=300,  n_init=10,random_state=0 )
-
         kmeans.fit(Y)
-
         wcss.append(kmeans.inertia_)
 
     #kmeans inertia_ attribute is:  Sum of squared distances of samples #to their closest cluster center.
@@ -591,71 +617,40 @@ def kmeansmcda(dfall):
 
     # Half dataset
 
-    """#5 According to the Elbow graph we deterrmine the clusters number as #5. Applying k-means algorithm to the X dataset.
+    ############### all data set ###############
+    #5 According to the Elbow graph we deterrmine the clusters number as 
+    #5. Applying k-means algorithm to the X dataset.
     kmeans = KMeans(n_clusters=2, init ='k-means++', max_iter=300, n_init=10,random_state=0 )
-    y_kmeans = kmeans.fit(X)
+    y_kmeans = kmeans.fit(Y)
 
     # We are going to use the fit predict method that returns for each #observation which cluster it belongs to. 
     # The cluster to which #it belongs and it will return this cluster numbers into a 
     # # single vector that is  called y K-means
     #Predicted values
-    y_kmeans = kmeans.fit_predict(X)
-
-    ##kmeans score
-    kmeans.score(X)
-
-    ####k-fold cross validation score 
-    scores = cross_val_score(kmeans, X, y[:240], cv=5)
-    print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
-
-    scores = cross_val_predict(kmeans, X, y[:240], cv=5)
-    print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
-
-    #6 Visualising the clusters based on prediction 
-
-    #original values 
-
-    #credit score values
-    plt.scatter(X.iloc[y_kmeans==0, 0], X.iloc[y_kmeans==0, 1], s=10, c='red', label ='Cluster 1' )
-    plt.scatter(X.iloc[y_kmeans==1, 0], X.iloc[y_kmeans==1, 1], s=10, c='blue', label ='Cluster 2')
-
-    #visual based on actual values values 
-    #Plot the centroid. This time we're going to use the cluster centres  
-    # attribute that returns here the coordinates of the centroid.
-    plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
-    plt.title('Clusters k-means')
-
-    #plt.xlim(0.0025,0.006)# predicted 20 columns
-    #plt.ylim(0.0,0.5)
-    plt.show()
-
-
-    #credit score values
-    plt.scatter(X.iloc[:,:10],X.iloc[:,10:],alpha = 0.5)
-
-    plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
-    plt.title('Clusters k-means')
-    plt.show()"""
-
-    ############### all data set ###############
-    kmeans = KMeans(n_clusters=2, init ='k-means++', max_iter=300, n_init=10,random_state=0 )
-    y_kmeans = kmeans.fit(Y)
     y_kmeans = kmeans.fit_predict(Y)
 
+    #kmeans score
+    kmeans.score(Y)
 
     ####k-fold cross validation score 
-    scores = cross_val_score(kmeans, Y, y, cv=5)
+    #scores = cross_val_score(kmeans, Y, y, cv=5)
     # print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
-    scores = cross_val_predict(kmeans, Y, y, cv=5)
+    #scores = cross_val_predict(kmeans, Y, y, cv=5)
     # print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
     #6 Visualising the clusters based on prediction 
 
-
     #credit score values
-    plt.scatter(Y.iloc[y_kmeans==0, 0], Y.iloc[y_kmeans==0, 1], s=10, c='red', label ='Cluster 1' )
-    plt.scatter(Y.iloc[y_kmeans==1, 0], Y.iloc[y_kmeans==1, 1], s=10, c='blue', label ='Cluster 2')
+    if(mcda==False):
+        plt.scatter(Y.iloc[y_kmeans==0, ncol:], Y.iloc[y_kmeans==0, :ncol], s=10, c='red', label ='Cluster 1' )
+        plt.scatter(Y.iloc[y_kmeans==1,ncol:], Y.iloc[y_kmeans==1, :ncol], s=10, c='blue', label ='Cluster 2')
+    else:
+        plt.scatter(dfclass.iloc[y_kmeans==0, cl], dfclass.iloc[y_kmeans==0, ov], s=10, c='red', label ='Cluster 1' )
+        plt.scatter(dfclass.iloc[y_kmeans==1,cl], dfclass.iloc[y_kmeans==1, ov], s=10, c='blue', label ='Cluster 2')
+    
+    #credit score values
+    #plt.scatter(Y.iloc[:,:ncol],Y.iloc[:,ncol:],alpha = 0.5)
 
     #visual based on actual values values 
     #Plot the centroid. This time we're going to use the cluster centres  
@@ -664,31 +659,40 @@ def kmeansmcda(dfall):
     plt.title('Clusters k-means')
     #plt.xlim(0.0040,0.0075)# predicted 20 columns epsilon 0.1
     #plt.ylim(0.0,0.5)
-
     plt.show()
 
-    ncol=int(Y.shape[1]/2)
-    
-    #credit score values
-    plt.scatter(Y.iloc[:,:ncol],Y.iloc[:,ncol:],alpha = 0.5)
+    #plt.scatter(Y.iloc[y_kmeans==0, ncol:], Y.iloc[y_kmeans==0, :ncol], s=10, c='red', label ='Cluster 1' )
+    #plt.scatter(Y.iloc[y_kmeans==1,ncol:], Y.iloc[y_kmeans==1, :ncol], s=10, c='blue', label ='Cluster 2')
+    # plt.scatter(Y.iloc[:,:ncol],Y.iloc[:,ncol:],alpha = 0.5)
+    # plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
+    # plt.title('Clusters k-means')
+    # plt.show()
 
-    plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
-    plt.title('Clusters k-means')
-    plt.show()
-
+    ####spectral clustering     
+    # from sklearn.cluster import SpectralClustering
+    # model = SpectralClustering(n_clusters=2, affinity='nearest_neighbors',assign_labels='kmeans')
+    # labels = model.fit_predict(Y)
+    # plt.scatter(Y.iloc[:, :ncol], Y.iloc[:, ncol:], c=labels,s=50, cmap='viridis')
+    # plt.show()
 
     ####lower bound #####
     #for alternatives
-    dfall.insert(dfall.shape[1],"Pred",y_kmeans)
+    dfall.insert(dfall.shape[1],"kmeansPred",y_kmeans)
 
-    dft = dfall[dfall["Pred"]==0].idxmin() # 0 for utastar or min  check data 
-    #indx = dft["OutRanks"] # for utastar 
-    indx = dft["Pred"] # for utadis
-    cined = dfall.columns.get_loc("Pred")
-    lower_bound = dfall.iloc[indx,cined]
+    dftlist = dfall[dfall["kmeansPred"]==1].copy()
+    indx = dftlist.iloc[:,ov].idxmin()
+    lower_bound = dfall.iloc[indx,ov]  
 
+
+    # dft = dfall[dfall["kmeansPred"]==0].idxmin() # 0 for utastar or min  check data 
+    # indx = dft["kmeansPred"] # for utadis
+    # cined = dfall.columns.get_loc("kmeansPred")
+    # lower_bound = dfall.iloc[indx,cined]
+
+
+    #Accuracy 
     xin=dfall.columns.get_loc("Class")
-    acc = accurMatrix(dfall.iloc[:,xin],y_kmeans)
+    acc = accurMatrix(dfall.iloc[:,xin],y_kmeans,True)
   
 
     print("Lower Bound value for cluster-->",lower_bound)
@@ -697,16 +701,6 @@ def kmeansmcda(dfall):
     #####to excel alternatives results 
     dfall.to_excel(
         datapath + r"\ResultsUtastar\UtastarKmeansAltResults.xlsx")
-
-        
-    ####spectral clustering 
-    X = df
-    from sklearn.cluster import SpectralClustering
-    model = SpectralClustering(n_clusters=2, affinity='nearest_neighbors',
-                            assign_labels='kmeans')
-    labels = model.fit_predict(X)
-    plt.scatter(X.iloc[:, 0], X.iloc[:, 1], c=labels,
-                s=50, cmap='viridis')
 
 def kmeansfeautreReduc(dfall):
      #KMeans class from the sklearn library.
@@ -947,90 +941,88 @@ def pcaAnalysis(df):
 
 
 #### Main ###
-def main():
+#def main():
 
-    #German Dataset
-    df = GermanDataLoadPreProssecing()
-    
-    # Dimensions Visuals 
-    #HistogramAndHitmapPlots(df)
+#German Dataset
+df = GermanDataLoadPreProssecing()
 
-    ############# Before Feauture Reduction ###########
-    ######### MCDA 
+# Dimensions Visuals 
+#HistogramAndHitmapPlots(df)
 
-    #Utastar
-    (valuefunc,utastardf) = GermanDataUtastar(df.copy())
-    #HistogramAndHitmapPlots(utastardf.iloc[1:,:-3])-not usefull
-    
-    #Utadis
-    (valuefunc2,utadisdf) = GermanDataUtadis(df.copy())
-   
-    #Topsis -Utastar
-    print("--Topsis with Utastar Weights--")
-    utastar_topsis = GermanDataTopsis(df.copy(),valuefunc)
-    
-    #Topsis - Utadis
-    print("--Topsis with Utadis weights--")
-    utadis_topsis = GermanDataTopsis(df.copy(),valuefunc2)
+############# Before Feauture Reduction ###########
+######### MCDA 
 
-    ####### K-means and combinations 
+#Utastar
+(valuefunc,utastardf) = GermanDataUtastar(df.copy())
+#HistogramAndHitmapPlots(utastardf.iloc[1:,:-3])-not usefull
 
-    ## k-means on original dataset 
-    # print("K-means original data")
-    # kmeansmcda(df.copy())
-    
-    ## Utastar and kmeans  
-    # print("Utastar - Kmeans")
-    # kmeansmcda(utastardf.iloc[1:,:-3].copy())
+#Utadis
+(valuefunc2,utadisdf) = GermanDataUtadis(df.copy())
 
-    ## Utadis and kmeans 
-    # print("Utadis - Kmeans")
-    # kmeansmcda(utadisdf.iloc[1:,:-2].copy())
+#Topsis -Utastar
+print("--Topsis with Utastar Weights--")
+utastar_topsis = GermanDataTopsis(df.copy(),valuefunc)
 
-    #Topsis and kmeans befrore reduction 
-    # print("Utastar Topsis - kmeans")
-    # utastar_topsis  = utastar_topsis.drop(['Solution','Pred'],axis=1)
-    # kmeansmcda(utastar_topsis.copy())
+#Topsis - Utadis
+print("--Topsis with Utadis weights--")
+utadis_topsis = GermanDataTopsis(df.copy(),valuefunc2)
 
-    #Topsis and kmeans befrore reduction 
-    # print("Utadis Topsis - kmeans")
-    # utadis_topsis  = utadis_topsis.drop(['Solution','Pred'],axis=1)
-    # kmeansmcda(utadis_topsis.copy())
+####### K-means and combinations 
 
-    ###########  Feature reduction ###########
-    #Utastar Reduction
-    dfR=UtastarfeatureReduc(utastardf.copy())
+# k-means on original dataset 
+# print("K-means original data")
+# kmeansmcda(df.copy())
 
-    #Utadis Reduction
-    dfU = UtadisFeatureReduc(utadisdf.copy())
-    
-    # TODO 
-    #K-means Reduction
-    #kmeansfeautreReduc(utastardf)
+# Utastar and kmeans   
+# print("Utastar - Kmeans")
+# kmeansmcda(utastardf.iloc[1:,:].copy(),True)
 
+## Utadis and kmeans 
+print("Utadis - Kmeans")
+kmeansmcda(utadisdf.iloc[1:,:].copy(),True)
 
-    #TODO 
-    ######### MCDA and Kmeans After Feautre reduction ##########
+#Topsis and kmeans befrore reduction 
+# print("Utastar Topsis - kmeans")
+# utastar_topsis  = utastar_topsis.drop(['Solution','Pred'],axis=1)
+# kmeansmcda(utastar_topsis.copy())
 
-    ## Utastar and kmeans  
-    print("Utastar - Kmeans")
-    kmeansmcda(dfR.iloc[:,:-1].copy())
+#Topsis and kmeans befrore reduction 
+# print("Utadis Topsis - kmeans")
+# utadis_topsis  = utadis_topsis.drop(['Solution','Pred'],axis=1)
+# kmeansmcda(utadis_topsis.copy())
 
-    ## Utadis and kmeans 
-    print("Utadis - Kmeans")
-    kmeansmcda(dfU.iloc[:,:-1].copy())
+###########  Feature reduction ###########
+#Utastar Reduction
+# dfR=UtastarfeatureReduc(utastardf.copy())
 
-    #Topsis and kmeans befrore reduction 
-    # print("Utastar Topsis - kmeans")
-    # utastar_topsis  = utastar_topsis.drop(['Solution','Pred'],axis=1)
-    # kmeansmcda(utastar_topsis.copy())
+# #Utadis Reduction
+# dfU = UtadisFeatureReduc(utadisdf.copy())
 
-    #Topsis and kmeans befrore reduction 
-    # print("Utadis Topsis - kmeans")
-    # utadis_topsis  = utadis_topsis.drop(['Solution','Pred'],axis=1)
-    # kmeansmcda(utadis_topsis.copy())
-    
-    print("\n-----German Dataset End----------")
+# # TODO 
+# #K-means Reduction
+# #kmeansfeautreReduc(utastardf)
+
+# ######### MCDA and Kmeans After Feautre reduction ##########
+
+# ## Utastar and kmeans  
+# print("Utastar - Kmeans")
+# kmeansmcda(dfR.iloc[:,:-1].copy())
+
+# ## Utadis and kmeans 
+# print("Utadis - Kmeans")
+# kmeansmcda(dfU.iloc[:,:-1].copy())
+
+# #Topsis and kmeans befrore reduction 
+# print("Utastar Topsis - kmeans")
+# utastar_topsis  = utastar_topsis[dfR.iloc[:,:-1].columns]
+# kmeansmcda(utastar_topsis.copy())
+
+# #Topsis and kmeans befrore reduction 
+# print("Utadis Topsis - kmeans")
+# utadis_topsis  = utadis_topsis[dfU.iloc[:,:-1].columns]
+# kmeansmcda(utadis_topsis.copy())
+
+print("\n----- Dataset End----------")
 
 
-main()
+#main()

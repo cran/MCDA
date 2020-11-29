@@ -98,13 +98,11 @@ def GermanDataLoadPreProssecing():
     df["job"].replace("1", "0", regex=True, inplace=True)
     df["telephone"].replace("1", "0", regex=True, inplace=True)
 
-
     # Remove index column if needed
     # df = df.set_index(list(df)[0])
 
     # Set index name
     df.columns.name = "Alternatives"
-
 
     # Reset index
     df = df.reset_index(drop=True)
@@ -297,7 +295,6 @@ def GermanDataUtastar(df,prnt=False):
     data = pd.DataFrame(data, index=performanceTable.columns.values, columns=["ValueFunc"])
     valuefunc = data.transpose()
 
-    # TODO Replace -3 and -2 with more adjustable code 
     #distribute overall values to all dataframe based on valueFunc
     ncols= performanceTable.shape[1]
     for i in range(0,nrows):
@@ -668,6 +665,7 @@ def kmeansmcda(dfall,mcda=False):
 
     plt.show()
 
+
     ####spectral clustering     
     # from sklearn.cluster import SpectralClustering
     # model = SpectralClustering(n_clusters=2, affinity='nearest_neighbors',assign_labels='kmeans')
@@ -1025,9 +1023,9 @@ utadis_topsis = GermanDataTopsis(df.copy(),valuefunc2)
 #kmeansmcda(utastar_topsis.copy(),True)
 
 # #Topsis and kmeans after reduction 
-# print("Utadis Topsis - kmeans")
+print("Utadis Topsis - kmeans")
 # utadis_topsis  = utadis_topsis[dfU.iloc[:,:-1].columns]
-# kmeansmcda(utadis_topsis.copy(),True)
+kmeansmcda(utadis_topsis.copy(),True)
 
 print("\n----- Dataset End----------")
 

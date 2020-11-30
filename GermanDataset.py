@@ -173,10 +173,7 @@ def inputsMCDA(df,flag):
     
     # removing the class column
     #df = pd.DataFrame(df)
-    if flag==1:
-        performanceTable = df.iloc[:,:-1] # -3
-    else:
-        performanceTable = df.iloc[:,:-1] # -3 if runned after utastar -1 if byitself 
+    performanceTable = df.iloc[:,:-1]
 
     #print("\nPerformance Table \n", performanceTable)
 

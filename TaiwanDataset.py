@@ -27,6 +27,8 @@ from sklearn.model_selection import KFold,train_test_split,cross_val_score,cross
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVR
 from sklearn.metrics import confusion_matrix,accuracy_score
+from sklearn.cluster import SpectralClustering
+
 
 from sklearn.datasets import make_blobs 
 
@@ -584,33 +586,38 @@ def DataUtastar(df,prnt=False):
     indx = dftlist.iloc[:,y3].idxmin()
     lbound = df.iloc[indx,y3]  
 
+    ###
+    lb = overalrand.describe().T
+    maxlbound = lb['mean'].values.flatten()
+    lbound=maxlbound
     ##Accuracy when everything over lowerbound is classified correctly 
-    predutastar= [1 if df.iloc[x,y3]> lbound   else 2 for x in range(0, nrows) ]
+    predutastar= [0 if df.iloc[x,y3]> lbound   else 1 for x in range(0, nrows) ]
+
+    maxpredutastar=predutastar
    
     #Accurancy Matrix 
     xin=df.columns.get_loc("Class")
-    acc = accurMatrix(df.iloc[:,xin],predutastar)
-    max_acc=0
-    maxpredutastar = predutastar
-    maxlbound=lbound
-    for x in range(1,int(len(dftlist)/10)):
-        if acc > max_acc:
-            max_acc = acc
-            maxpredutastar = predutastar
-            maxlbound=lbound
+    # acc = accurMatrix(df.iloc[:,xin],predutastar)
+    # max_acc=0
+    # maxpredutastar = predutastar
+    # maxlbound=lbound
+    # for x in range(1,int(len(dftlist)/10)):
+    #     if acc > max_acc:
+    #         max_acc = acc
+    #         maxpredutastar = predutastar
+    #         maxlbound=lbound
         
-        indx = dftlist.iloc[:-x,y3].idxmin()
-        lbound = df.iloc[indx,y3]  
-        ##Accuracy when everything over lowerbound is classified correctly 
-        predutastar= [1 if df.iloc[x,y3]> lbound  else 2 for x in range(0, nrows) ]
-        acc = accurMatrix(df.iloc[:,xin],predutastar)
+    #     indx = dftlist.iloc[:-x,y3].idxmin()
+    #     lbound = df.iloc[indx,y3]  
+    #     ##Accuracy when everything over lowerbound is classified correctly 
+    #     predutastar= [1 if df.iloc[x,y3]> lbound  else 2 for x in range(0, nrows) ]
+    #     acc = accurMatrix(df.iloc[:,xin],predutastar)
 
-    lb = overalrand.describe().T
-    maxlbound = lb['mean'].values.flatten()
+    
 
     #Print Max Accuracy 
     print("---Utastar---")
-    acc=accurMatrix(df.iloc[:,xin],maxpredutastar,prnt)
+    max_acc=accurMatrix(df.iloc[:,xin],maxpredutastar,prnt)
     df.insert(df.shape[1], "Pred", maxpredutastar) 
 
     # Insert valueFunctions to criteria/columns
@@ -781,25 +788,32 @@ def DataTopsis(df,weights,prnt=False):
     dftlist = overall1[overall1["Class"]==1].copy()
     indx = dftlist.iloc[:,y3].idxmin()
     lbound = overall1.iloc[indx,y3]  
+
+    lb = overall1["OverallValues"].describe().T
+    lbound = lb['mean']
+
     ##Accuracy when everything over lowerbound is classified correctly 
-    predutastar= [1 if overall1.iloc[x,y3]> lbound   else 2 for x in range(0, nrows) ]
+    predutastar= [0 if overall1.iloc[x,y3]> lbound   else 1 for x in range(0, nrows) ]
+
+    maxpredutastar = predutastar
     #Accurancy Matrix 
     xin=overall1.columns.get_loc("Class")
-    acc = accurMatrix(overall1.iloc[:,xin],predutastar)
-    max_acc=0
-    maxpredutastar = predutastar
-    maxlbound=lbound
-    for x in range(1,int(len(dftlist)/10)):
-        if acc > max_acc:
-            max_acc = acc
-            maxpredutastar = predutastar
-            maxlbound=lbound
+
+    # acc = accurMatrix(overall1.iloc[:,xin],predutastar)
+    # max_acc=0
+    # maxpredutastar = predutastar
+    # maxlbound=lbound
+    # for x in range(1,int(len(dftlist)/10)):
+    #     if acc > max_acc:
+    #         max_acc = acc
+    #         maxpredutastar = predutastar
+    #         maxlbound=lbound
         
-        indx = dftlist.iloc[:-x,y3].idxmin()
-        lbound = overall1.iloc[indx,y3]  
-        ##Accuracy when everything over lowerbound is classified correctly 
-        predutastar= [1 if overall1.iloc[x,y3]> lbound  else 2 for x in range(0, nrows) ]
-        acc = accurMatrix(overall1.iloc[:,xin],predutastar)
+    #     indx = dftlist.iloc[:-x,y3].idxmin()
+    #     lbound = overall1.iloc[indx,y3]  
+    #     ##Accuracy when everything over lowerbound is classified correctly 
+    #     predutastar= [1 if overall1.iloc[x,y3]> lbound  else 2 for x in range(0, nrows) ]
+    #     acc = accurMatrix(overall1.iloc[:,xin],predutastar)
 
     acc = accurMatrix(overall1.iloc[:,xin],maxpredutastar,prnt)
 
@@ -949,7 +963,7 @@ def kmeansmcda(dfall,mcda=False):
     #5 According to the Elbow graph we deterrmine the clusters number as 
     #5. Applying k-means algorithm to the X dataset.
     kmeans = KMeans(n_clusters=2, init ='k-means++', max_iter=300, n_init=10,random_state=0 )
-    y_kmeans = kmeans.fit(Y)
+    # y_kmeans = kmeans.fit(Y)
 
     # We are going to use the fit predict method that returns for each #observation which cluster it belongs to. 
     # The cluster to which #it belongs and it will return this cluster numbers into a 
@@ -978,31 +992,47 @@ def kmeansmcda(dfall,mcda=False):
     plt.scatter(dfclass.iloc[y_kmeans==1,cl], dfclass.iloc[y_kmeans==1, ov], s=10, c='blue', label ='Cluster 2')
     plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
     plt.title('Clusters k-means')
+    plt.xlabel('Class')
+    plt.ylabel('OverallValues')
     #plt.xlim(0.0040,0.0075)# predicted 20 columns epsilon 0.1
     #plt.ylim(0.0,0.5)
     plt.show()
 
-    if(Y.shape[1]%2==0):
-        plt.scatter(Y.iloc[y_kmeans==0, ncol:], Y.iloc[y_kmeans==0, :ncol], s=10, c='red', label ='Cluster 1' )
-        plt.scatter(Y.iloc[y_kmeans==1,ncol:], Y.iloc[y_kmeans==1, :ncol], s=10, c='blue', label ='Cluster 2')
-        plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
-        plt.title('Clusters k-means')
-        plt.show()
-    
+
     plt.scatter(dfclass.iloc[y_kmeans==0, ov],dfclass.iloc[y_kmeans==0, ov], s=10, c='red', label ='Cluster 1' )
     plt.scatter(dfclass.iloc[y_kmeans==1,ov],dfclass.iloc[y_kmeans==1, ov], s=10, c='blue', label ='Cluster 2')
     plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
     plt.title('Clusters k-means')
-
+    plt.xlabel('Class')
+    plt.ylabel('OverallValues')
     plt.show()
 
+  
+    ####spectral clustering     
+    model = SpectralClustering(n_clusters=2, affinity='nearest_neighbors',assign_labels='kmeans')
+    #labels = model.fit_predict(Y)
+    #plt.scatter(Y.iloc[:,:ncol],Y.iloc[:, ncol:], c=y_kmeans,s=50, cmap='viridis')
+    plt.scatter(dfclass.iloc[:,ov],dfclass.iloc[:, ov], c=y_kmeans,s=50, cmap='viridis')
+    plt.xlabel('Class')
+    plt.ylabel('OverallValues')
+    plt.show()
 
     ####spectral clustering     
-    # from sklearn.cluster import SpectralClustering
-    # model = SpectralClustering(n_clusters=2, affinity='nearest_neighbors',assign_labels='kmeans')
-    # labels = model.fit_predict(Y)
-    # plt.scatter(dfclass.iloc[y_kmeans==0, ov],dfclass.iloc[y_kmeans==1, ov], c=labels,s=50, cmap='viridis')
-    # plt.show()
+  
+
+    if (Y.shape[1]%2!=0):
+        ncol=int(Y.shape[1]/2)-1
+    else:
+        ncol=int(Y.shape[1]/2)
+
+
+
+    plt.scatter(Y.iloc[y_kmeans==0, :ncol],Y.iloc[y_kmeans==0, ncol:(ncol*2)], s=10, c='red', label ='Cluster 1' )
+    plt.scatter(Y.iloc[y_kmeans==1,:ncol],Y.iloc[y_kmeans==1, ncol:(ncol*2)], s=10, c='blue', label ='Cluster 2')
+    plt.scatter(kmeans.cluster_centers_[:, :1], kmeans.cluster_centers_[:, 2:3], s=100, c='green', label = 'Centroids' )
+    plt.title('Clusters k-means')
+    plt.show()
+
 
     ####lower bound #####
     #for alternatives
@@ -1011,12 +1041,6 @@ def kmeansmcda(dfall,mcda=False):
     dftlist = dfall[dfall["kmeansPred"]==1].copy()
     indx = dftlist.iloc[:,ov].idxmin()
     lower_bound = dfall.iloc[indx,ov]  
-
-
-    # dft = dfall[dfall["kmeansPred"]==0].idxmin() # 0 for utastar or min  check data 
-    # indx = dft["kmeansPred"] # for utadis
-    # cined = dfall.columns.get_loc("kmeansPred")
-    # lower_bound = dfall.iloc[indx,cined]
 
 
     #Accuracy 
@@ -1028,8 +1052,7 @@ def kmeansmcda(dfall,mcda=False):
     print("K-Means Accuracy--->",acc)
 
     #####to excel alternatives results 
-    dfall.to_excel(
-        datapath + r"\KmeansResults.xlsx")
+    dfall.to_excel(datapath + r"\KmeansResults.xlsx")
 
 def kmeansfeautreReduc(dfall):
      #KMeans class from the sklearn library.

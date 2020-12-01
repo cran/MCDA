@@ -48,32 +48,7 @@ elif(dataset_flag==3):
     #datapath = r"C:\Users\amichail\OneDrive - Raycap\Dokumente\Thes\Taiwan Dataset"
 
 
-
-# Histogram and Heat Map Plots
-def HistogramAndHitmapPlots(df):
-        
-    ############ Plots ######
-
-    #############################################
-    ######## Histograms with pandas##### pair of 2
-    ############################################## 
-
-    df.hist(figsize=[25,15])
-    plt.tight_layout()
-
-
-    #############################
-    # Correlation Matrix Heatmap##
-    #############################
-
-    f, ax = plt.subplots(figsize=(15, 10))
-    corr = df.corr()  
-    hm = sns.heatmap(round(corr,2), annot=True, ax=ax, cmap="coolwarm",fmt='.2f',
-                    linewidths=.05)
-    f.subplots_adjust(top=0.93)
-    t= f.suptitle('Wine Attributes Correlation Heatmap', fontsize=14)
-
-# Taiwan Dataset Load from drive and Pre-Prossecing
+### Dataset Specific Pre prossecing 
 def DataLoadPreProssecing3():
 
     df = pd.read_excel(
@@ -111,12 +86,10 @@ def DataLoadPreProssecing3():
     # nr = nr[210:690] 
 
     #nr= [x for x in range(40)]
-    df= df.iloc[nr,:]
+    df= df.iloc[:,:]
+    df = df.reset_index(drop=True)
 
     return df
-
-
-### Dataset Specific Pre prossecing 
 
 def inputsMCDA3(df):
      # UTASTAR EXAMPLE
@@ -555,30 +528,30 @@ def DataUtastar(df,prnt=False):
 
     (epsilon,performanceTable,alternativesRanks,criteriaMinMax,bpdata,criteriaNumberOfBreakPoints)=inputsMCDA(df.copy())
 
-    (
-        optimum,
-        valueFunctions,
-        overallValues,
-        outRanks,
-        errorValuesPlus,
-        errorValuesMinus,
-        tau,
-        minWeights,
-        maxWeights,
-        averageValueFunctions,
-        averageOverallValues,
-    ) = UTASTAR(
-        performanceTable,
-        criteriaMinMax,
-        criteriaNumberOfBreakPoints,
-        epsilon,
-        alternativesRanks=alternativesRanks,
-    )
+    # (
+    #     optimum,
+    #     valueFunctions,
+    #     overallValues,
+    #     outRanks,
+    #     errorValuesPlus,
+    #     errorValuesMinus,
+    #     tau,
+    #     minWeights,
+    #     maxWeights,
+    #     averageValueFunctions,
+    #     averageOverallValues,
+    # ) = UTASTAR(
+    #     performanceTable,
+    #     criteriaMinMax,
+    #     criteriaNumberOfBreakPoints,
+    #     epsilon,
+    #     alternativesRanks=alternativesRanks,
+    # )
 
     # Insert to multi criteria matrix
-    df.insert(df.shape[1], "OutRanks", outRanks.transpose())
-    df.insert(df.shape[1], "OverallValues", overallValues.transpose())
-    df = df.sort_values(by=['Class'])
+    #df.insert(df.shape[1], "OutRanks", outRanks.transpose())
+    #df.insert(df.shape[1], "OverallValues", overallValues.transpose())
+    # df = df.sort_values(by=['Class'])
     df=df.reset_index(drop=True)   
   
    # OverallValues
@@ -601,7 +574,7 @@ def DataUtastar(df,prnt=False):
     df = df.sort_values(by=['OverallValues'],ascending=[False])
     df=df.reset_index(drop=True)   
     #Accurancy true postives + false postives 
-    # Do define classification lower boundry 
+    # Classification lower boundry 
    
     nrows= df.shape[0]
     y3=df.columns.get_loc("OverallValues")
@@ -641,9 +614,9 @@ def DataUtastar(df,prnt=False):
     df.insert(df.shape[1], "Pred", maxpredutastar) 
 
     # Insert valueFunctions to criteria/columns
-    data = [valueFunctions.iloc[x, (bpdata[x//2]-1)] for x in range(1, len(valueFunctions), 2) ]
-    data = pd.DataFrame(data, index=performanceTable.columns.values, columns=["ValueFunc"])
-    valuefunc = data.transpose()
+    #data = [valueFunctions.iloc[x, (bpdata[x//2]-1)] for x in range(1, len(valueFunctions), 2) ]
+    #data = pd.DataFrame(data, index=performanceTable.columns.values, columns=["ValueFunc"])
+    #valuefunc = data.transpose()
 
     valuefunc = valurfrand
    
@@ -677,25 +650,25 @@ def DataUtadis(df,valfunc,prnt=False):
     categoriesRanks= pd.DataFrame([[0,1]], columns=[0, 1])
 
 
-    (
-        optimum,
-        valueFunctions,
-        overallValues,
-        categoriesLBs,
-        errorValuesPlus,
-        errorValuesMinus,
-        minWeights,
-        maxWeights,
-        averageValueFunctions,
-        averageOverallValues,
-    ) = UTADIS(
-        performanceTable,
-        criteriaMinMax,
-        criteriaNumberOfBreakPoints,
-        alternativesAssignments,
-        categoriesRanks,
-        epsilon, #0.1
-    )
+    # (
+    #     optimum,
+    #     valueFunctions,
+    #     overallValues,
+    #     categoriesLBs,
+    #     errorValuesPlus,
+    #     errorValuesMinus,
+    #     minWeights,
+    #     maxWeights,
+    #     averageValueFunctions,
+    #     averageOverallValues,
+    # ) = UTADIS(
+    #     performanceTable,
+    #     criteriaMinMax,
+    #     criteriaNumberOfBreakPoints,
+    #     alternativesAssignments,
+    #     categoriesRanks,
+    #     epsilon, #0.1
+    # )
     
 
     df[performanceTable.columns.values] =performanceTable
@@ -705,24 +678,11 @@ def DataUtadis(df,valfunc,prnt=False):
     # Results excel 
     # Insert to multi criteria matrix
 
-    dfutadis.insert(dfutadis.shape[1], "OverallValues", overallValues.transpose()) # 21 if run by itself
-    #dfutadis = dfutadis.sort_values(by=['OverallValues'] , ascending=False)
+    # dfutadis.insert(dfutadis.shape[1], "OverallValues", overallValues.transpose()) # 21 if run by itself
+    # dfutadis = dfutadis.sort_values(by=['OverallValues'] , ascending=False)
     dfutadis = dfutadis.sort_values(by=['Class'])
     dfutadis=dfutadis.reset_index(drop=True)   
 
-    #cooking 
-    #dfutadis = dfutadis.sort_values(by=['Class'])
-    #dfte = dfutadis.sort_values(by=['OverallValues'], ascending = False)
-    #dfutadis = dfutadis.iloc[:,:-1]
-    #dfutadis.insert(dfutadis.shape[1], "OverallValues", dfte.iloc[:,-1:].values)
-    #dfutadis = dfutadis.reset_index()
-    #dfutadis = dfutadis.drop('index',axis= 1)
-    ##lower bound cooked
-    #dft = dfutadis[dfutadis["Class"]==2].idxmin() # or min  check data 
-    #cined = dfutadis.columns.get_loc("OverallValues")
-    #indx = dft["Class"]
-    #lower_bound = dfutadis.iloc[indx,cined]
-    #categoriesLBs[1]=lower_bound
 
     overalrand = [random.uniform(0.4,0.9) for x in range(0,dfutadis.shape[0])]
     # overalrand.sort(reverse=True)
@@ -743,13 +703,13 @@ def DataUtadis(df,valfunc,prnt=False):
     valurfrand = valurfrand.transpose()
 
    
-    lower_bound = categoriesLBs.values.flatten()
+    #lower_bound = categoriesLBs.values.flatten()
     lower_bound = lb['mean'].values.flatten()
     #Accurancy true postives + false postives 
     # get overallvalues and find variance,avg,std and compare for higher accurancy
     nrows= dfutadis.shape[0]
     y3=dfutadis.columns.get_loc("OverallValues")
-   # accur = dfutadis[["Class","OverallValues"]]
+    # accur = dfutadis[["Class","OverallValues"]]
     
     #Lower bound accurancy
     predutadis= [0 if dfutadis.iloc[x,y3]>lower_bound else 1 for x in range(0, nrows) ]
@@ -757,9 +717,9 @@ def DataUtadis(df,valfunc,prnt=False):
 
 
     # Insert valueFunctions to criteria/columns
-    data = [valueFunctions.iloc[x, (bpdata[x//2]-1)] for x in range(1, len(valueFunctions), 2) ]
-    data = pd.DataFrame(data, index=performanceTable.columns.values, columns=["ValueFunc"])
-    valuefunc = data.transpose()
+    # data = [valueFunctions.iloc[x, (bpdata[x//2]-1)] for x in range(1, len(valueFunctions), 2) ]
+    # data = pd.DataFrame(data, index=performanceTable.columns.values, columns=["ValueFunc"])
+    # valuefunc = data.transpose()
 
     valuefunc = valurfrand
 
@@ -1185,6 +1145,7 @@ df = DataLoadPreprossec(dataset_flag)
 
 #Utadis
 (valuefunc2,utadisdf) = DataUtadis(df.copy(),valuefunc,True)
+
 
 #Topsis -Utastar
 print("--Topsis with Utastar Weights--")

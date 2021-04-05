@@ -6,7 +6,7 @@
 install.packages("MCDA")
 
 # if available, install cplexAPI too - here the path is for the standard location of CPLEX 12.8 - update based on your local configuration
-install.packages("cplexAPI",configure.args = "--with-cplex-dir=/opt/ibm/ILOG/CPLEX_Studio1271/cplex")
+install.packages("cplexAPI",configure.args = "--with-cplex-dir=/opt/ibm/ILOG/CPLEX_Studio128/cplex")
 
 #################################
 #------------- Init ------------#

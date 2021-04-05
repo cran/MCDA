@@ -1,7 +1,8 @@
 351afb03c3e2ab9283dd3e251358405f *COPYING
-37c53744374c3da20547c37f720316ac *DESCRIPTION
-b5a47d4a97998137c1e8873a0a769e60 *NAMESPACE
+d1769b0b1cbb6d13550d803058352fd5 *DESCRIPTION
+4dec50036bbee12dc485f7720c26a974 *NAMESPACE
 20cac4f935a89369683a2410878e5f16 *R/AHP.R
+a1aee8da5b8a37e898c047e96081a07c *R/ELECTREIIIDistillation.R
 9e10aa166b2dad50670f4ea150a7a95e *R/LPDMRSort.R
 094f3d4b43d54e5125cd4a16e120c8c4 *R/LPDMRSortIdentifyIncompatibleAssignments.R
 5405020a6e19bc11fd4033250b6f3862 *R/LPDMRSortIdentifyUsedDictatorProfiles.R
@@ -14,6 +15,11 @@ c9a6130c4a193569f81936a7c6dbd621 *R/MRSort.R
 8c601093c94823cbf64ce5e150834488 *R/MRSortIdentifyUsedVetoProfiles.R
 41fe56c08e1d586a14ad827847a2afcb *R/MRSortInferenceApprox.R
 9f118de84d85e63cf78e7b316ba4c172 *R/MRSortInferenceExact.R
+dbf3839fa24c7c0869d334a7673f14ad *R/MRSortInterval.R
+89e4d1d863ebc90cc3da5353ec9376c4 *R/PROMETHEEI.R
+fdaef94c9e2da6ab26b63c336ae21b3b *R/PROMETHEEII.R
+1d72cc06d567ab18f5ffcaaca2022522 *R/PROMETHEEOutrankingFlows.R
+2da2ba4b723b7b626ee4348f69d475ba *R/PROMETHEEPreferenceIndices.R
 3161340dbc9d7546b668fb297939bc56 *R/SRMP.R
 c370e391a335cab1e76363ed2a302a86 *R/SRMPInference.R
 aa0117f46c10c5f32fe7d847eba4dba0 *R/SRMPInferenceApprox.R
@@ -45,7 +51,7 @@ b32bac845d7351b64d86b7430f23437f *README
 32754009978d18e8f1c9aa834f2691b4 *inst/datasets/performanceTable.csv
 6a4865dee4f6f0920a7e46de6508d48e *inst/datasets/performanceTable2.csv
 13fa89a0dc282897e7de607097e6667a *inst/examples/articleExample.R
-0dd5fadf22b6eed5d2085104a8ec8929 *inst/examples/exampleFLOSS.R
+7a39a298e84b324f92334abfa678e0df *inst/examples/exampleFLOSS.R
 bd174af445cdc52ce6fded0b14522156 *inst/examples/weightedSumExample.R
 3560cb685c7ada167d078925186e8fbf *inst/extdata/MRSortDIdentifyInvalidAssignmentsSet.gmpl
 054911e3e65f37b3d5c65cbf9dd0d37b *inst/extdata/MRSortDIdentifyMinimalInvalidAssignmentsSet.gmpl
@@ -129,6 +135,7 @@ dba358a5867837d4f4868ca0d3e74bad *inst/extdata/MRSortVInferenceModelSpreadWeight
 be3cf642d14773818b2baa31532f9396 *inst/extdata/SRMPNoInconsist.gmpl
 4414781265466278af3f10f9250f70c9 *inst/extdata/SRMPNoInconsistIndif.gmpl
 1e2ac459a4cfe9bb1b5bdb8535e67f3a *man/AHP.Rd
+54f21f09e0700c3f80290138e49d9f31 *man/ELECTREIIIDistillation.Rd
 84f715c121bf3a57a79372a73f9e7e5a *man/LPDMRSort.Rd
 451d906f44943bcf8bf20b8d05a09ae8 *man/LPDMRSortIdentifyIncompatibleAssignments.Rd
 f650bc3be46748e82df8c1635e66ab4d *man/LPDMRSortIdentifyUsedDictatorProfiles.Rd
@@ -141,6 +148,11 @@ cb10f3af85975d87167a1719e871a900 *man/MRSort.Rd
 000ec2bfaf14b099301141d82fe872a5 *man/MRSortIdentifyUsedVetoProfiles.Rd
 a3d5839e0bb4b010f788d00f20dde9f4 *man/MRSortInferenceApprox.Rd
 b4c1f4203f6d371e9a84c4e1613c1a86 *man/MRSortInferenceExact.Rd
+34563557f104dc7cafb5b7ba2a336fb2 *man/MRSortInterval.Rd
+a9aa252f4b548cb139ff69487c2b8e62 *man/PROMETHEEI.Rd
+6d1636af862c0257775f91b679b62951 *man/PROMETHEEII.Rd
+8f152381552131313484072a6bd077e4 *man/PROMETHEEOutrankingFlows.Rd
+7362767f9c36943c4b864ba38ad5fbf6 *man/PROMETHEEPreferenceIndices.Rd
 c811281f840cc609f2846fdf7c9a9d04 *man/SRMP.Rd
 05f1743156ede6362489353c6dd4341e *man/SRMPInference.Rd
 0b298b62e7c55bfe1fd8d6e4d7d77860 *man/SRMPInferenceApprox.Rd
@@ -167,6 +179,7 @@ cfe4bc43737cd21e11880d1a519a1d3a *man/plotPiecewiseLinearValueFunctions.Rd
 5753a2af854b63b4702b9db4a41f50aa *man/plotRadarPerformanceTable.Rd
 46b1d898d06c3339b9057a1fe4ac3209 *man/weightedSum.Rd
 154948484a09f9e85cf5c655c60a7d0e *tests/AHP.R
+bd7eb0acbeba3e696336df79f88414ae *tests/ELECTREIIIDistillation.R
 3a6689bfd22f0851aba7dc2a467ab7a0 *tests/LPDMRSort.R
 56e2169c986d2d0fdef5bfd46cf8764f *tests/LPDMRSortIdentifyIncompatibleAssignments.R
 5f1ee36200788b1424b09ab289d27c73 *tests/LPDMRSortIdentifyUsedDictatorProfiles.R
@@ -179,6 +192,11 @@ b258a8fc8d3e9411eb6c71f1efb3e989 *tests/MRSort.R
 79a7a7c5a9a3f2038ed6cc3bca62f8df *tests/MRSortIdentifyUsedVetoProfiles.R
 f20caeabaa7d7b216ceeba914ffbcf7b *tests/MRSortInferenceApprox.R
 bbb6c674c38eb876c5462f0be26dc65d *tests/MRSortInferenceExact.R
+20c08124f21bad96995d67c72df5471b *tests/MRSortInterval.R
+6529b8623c7d8c2b2e74f264cd247769 *tests/PROMETHEEI.R
+275c904ae99f115dfefd78c64f1000f7 *tests/PROMETHEEII.R
+7fce8e71d7e8653dacb157f82478095c *tests/PROMETHEEOutrankingFlows.R
+2ac32a2027ccb577641a3e3ba2dfaca1 *tests/PROMETHEEPreferenceIndices.R
 893e1c2768d96b18a7a7661ecd70b184 *tests/SRMP.R
 ce65927874a32e565fcea422327a3456 *tests/SRMPInference.R
 9bd5f1ea0b9f581ddc8d750072d038d3 *tests/SRMPInferenceApprox.R

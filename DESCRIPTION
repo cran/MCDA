@@ -1,6 +1,6 @@
 Package: MCDA
-Version: 0.0.20
-Date: 2019-05-29
+Version: 0.0.21
+Date: 2021-04-05
 Title: Support for the Multicriteria Decision Aiding Process
 Author: Patrick Meyer, Sébastien Bigaret, Richard Hodgett, Alexandru-Liviu Olteanu
 Maintainer: Patrick Meyer <patrick.meyer@imt-atlantique.fr>
@@ -15,6 +15,6 @@ License: EUPL (== 1.1)
 Encoding: UTF-8
 URL: https://github.com/paterijk/MCDA
 NeedsCompilation: no
-Packaged: 2019-05-29 12:35:56 UTC; pat
+Packaged: 2021-04-05 13:47:49 UTC; pat
 Repository: CRAN
-Date/Publication: 2019-05-29 13:30:10 UTC
+Date/Publication: 2021-04-05 14:40:06 UTC

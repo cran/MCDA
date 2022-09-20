@@ -1,6 +1,6 @@
 351afb03c3e2ab9283dd3e251358405f *COPYING
-d1769b0b1cbb6d13550d803058352fd5 *DESCRIPTION
-4dec50036bbee12dc485f7720c26a974 *NAMESPACE
+10b36bf1cd8a5a35a95ff03274c7c47c *DESCRIPTION
+39b4de372fb0255a267c738e1d230ed1 *NAMESPACE
 20cac4f935a89369683a2410878e5f16 *R/AHP.R
 a1aee8da5b8a37e898c047e96081a07c *R/ELECTREIIIDistillation.R
 9e10aa166b2dad50670f4ea150a7a95e *R/LPDMRSort.R
@@ -30,6 +30,7 @@ d6a24062aac2131dd29c58bf067206ef *R/SRMPInferenceFixedLexicographicOrder.R
 6df9cf955852c94ac755d11c6c84c14a *R/SRMPInferenceNoInconsist.R
 9d731884af6d319ff255e0aff590e3d9 *R/SRMPInferenceNoInconsistFixedLexicographicOrder.R
 16f7d959ea826498f1aba69dfffde587 *R/SRMPInferenceNoInconsistFixedProfilesNumber.R
+fe47d94a03790f015588e64df1d65f08 *R/SURE.R
 f85b5b4bf212383e91df0c6a9668ba85 *R/TOPSIS.R
 4dbeacb6918e253e64d1174983a7680c *R/UTA.R
 c1db97f1c09fb080f7720a73a722e221 *R/UTADIS.R
@@ -163,6 +164,7 @@ f6e560994f48e938b5991c0b00460290 *man/SRMPInferenceApproxFixedProfilesNumber.Rd
 a9a21b0148d8113c9a77d17ce602d45b *man/SRMPInferenceNoInconsist.Rd
 6f640f012b25e769d408f832f24b550b *man/SRMPInferenceNoInconsistFixedLexicographicOrder.Rd
 50fdfd43db334e97f13dcf2b08e13ede *man/SRMPInferenceNoInconsistFixedProfilesNumber.Rd
+141c419419dfae91c498dabcf90de3a2 *man/SURE.Rd
 2a1d1deebb8c8add1bdfdba5ec83815c *man/TOPSIS.Rd
 716a6383c75d02a84514e5f9e5a8cd8f *man/UTA.Rd
 c3e2930e90523b0b246caba3c93e19db *man/UTADIS.Rd
@@ -177,6 +179,7 @@ bbbe8d0e4458dcf5f92251ce5c1ea5c8 *man/plotMARE.Rd
 6181dc495e4a4e232e50b2fcafb50f4a *man/plotMRSortSortingProblem.Rd
 cfe4bc43737cd21e11880d1a519a1d3a *man/plotPiecewiseLinearValueFunctions.Rd
 5753a2af854b63b4702b9db4a41f50aa *man/plotRadarPerformanceTable.Rd
+e2e84849ffbd0e934813b77340154509 *man/plotSURE.Rd
 46b1d898d06c3339b9057a1fe4ac3209 *man/weightedSum.Rd
 154948484a09f9e85cf5c655c60a7d0e *tests/AHP.R
 bd7eb0acbeba3e696336df79f88414ae *tests/ELECTREIIIDistillation.R
@@ -207,6 +210,7 @@ ba04178a4f19e6e6d1fc46d3d3feede8 *tests/SRMPInferenceFixedLexicographicOrder.R
 e80a7ccfe6c0176d4d0449a54be1bc49 *tests/SRMPInferenceNoInconsist.R
 077800a65cae85914a4d9c36f67c49b9 *tests/SRMPInferenceNoInconsistFixedLexicographicOrder.R
 c12d613c277a883d2caf55db2264e42c *tests/SRMPInferenceNoInconsistFixedProfilesNumber.R
+a1e7b0cf04fb27b126a03a0604d2e6fc *tests/SURE.R
 dfe3ac30c09b7e86757f0dbb16c8b2a0 *tests/TOPSIS.R
 6ce022cac340b05c8639f750a3d197e7 *tests/UTA.R
 15ffad985634ce916d2f6736a3258fc7 *tests/UTADIS.R

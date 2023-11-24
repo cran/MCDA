@@ -1,3 +1,133 @@
+#' Plot the categories and assignments of an Electre TRI-like sorting problem
+#' (via separation profiles).
+#' 
+#' The profiles shown are the separation profiles between the classes. They are
+#' stored as the lower profiles of the categories.
+#' 
+#' 
+#' @param performanceTable Matrix or data frame containing the performance
+#' table. Each row corresponds to an alternative, and each column to a
+#' criterion. Rows (resp. columns) must be named according to the IDs of the
+#' alternatives (resp. criteria).
+#' @param categoriesLowerProfiles Matrix containing, in each row, the lower
+#' profiles of the categories (the separation profiles in fact). The columns
+#' are named according to the criteria, and the rows are named according to the
+#' categories. The index of the row in the matrix corresponds to the rank of
+#' the category.
+#' @param categoriesRanks A vector containing the ranks of the categories (1
+#' for the best, with higher values for increasingly less preferred
+#' categories). The vector needs to be named with the categories names, whereas
+#' the ranks need to be a range of values from 1 to the number of categories.
+#' @param assignments Vector containing the assignments (IDs of the categories)
+#' of the alternatives to the categories. The elements are named according to
+#' the alternatives.
+#' @param criteriaMinMax Vector containing the preference direction on each of
+#' the criteria. "min" (resp. "max") indicates that the criterion has to be
+#' minimized (maximized). The elements are named according to the IDs of the
+#' criteria.
+#' @param criteriaLBs Vector containing the lower bounds of the criteria to be
+#' considered for the plotting. The elements are named according to the IDs of
+#' the criteria.
+#' @param criteriaUBs Vector containing the upper bounds of the criteria to be
+#' considered for the plotting. The elements are named according to the IDs of
+#' the criteria.
+#' @param categoriesDictators Matrix containing, in each row, the lower
+#' dictator profiles of the categories. The columns are named according to the
+#' criteria, and the rows are named according to the categories. The index of
+#' the row in the matrix corresponds to the rank of the category.
+#' @param categoriesVetoes Matrix containing, in each row, the lower veto
+#' profiles of the categories. The columns are named according to the criteria,
+#' and the rows are named according to the categories. The index of the row in
+#' the matrix corresponds to the rank of the category.
+#' @param majorityRule A string containing one of the following values: 'V' ,
+#' 'D', 'v', 'd', 'dV', 'Dv', 'dv'. This indicates the type of majority rule
+#' that will be used by the MRSort model. 'V' stands for MRSort with vetoes,
+#' 'D' stands for MRSort with dictators, 'v' stands for MRSort with vetoes
+#' weakened by dictators, 'd' stands for MRSort with dictators weakened by
+#' vetoes, 'dV' stands for MRSort with vetoes dominating dictators, 'Dv' stands
+#' for MRSort with dictators dominating vetoes, while 'dv' stands for MRSort
+#' with conflicting vetoes and dictators.
+#' @param criteriaWeights Vector containing the criteria weights. The elements
+#' are named according to the IDs of the criteria.
+#' @param majorityThreshold A value corresponding to the majority threshold.
+#' Along with the criteria weights, this value is used to determine when a
+#' coalition of criteria is sufficient in order to assert that an alternative
+#' is at least as good as a category profile.
+#' @param alternativesIDs Vector containing IDs of alternatives, according to
+#' which the datashould be filtered.
+#' @param criteriaIDs Vector containing IDs of criteria, according to which the
+#' data should be filtered.
+#' @param legendRatio The ratio between the legend and plot heights. By defaut
+#' 0.2.
+#' @keywords methods
+#' @examples
+#' 
+#' # the performance table
+#' 
+#' performanceTable <- rbind(
+#'   c(1,10,1),
+#'   c(4,20,2),
+#'   c(2,20,0),
+#'   c(6,40,0),
+#'   c(30,30,3))
+#' 
+#' rownames(performanceTable) <- c("RER","METRO1","METRO2","BUS","TAXI")
+#' 
+#' colnames(performanceTable) <- c("Price","Time","Comfort")
+#' 
+#' # lower profiles of the categories 
+#' # (best category in the first position of the list)
+#' 
+#' categoriesLowerProfiles <- rbind(c(3, 11, 3),c(7, 25, 2),c(30,30,0))
+#' 
+#' colnames(categoriesLowerProfiles) <- colnames(performanceTable)
+#' 
+#' rownames(categoriesLowerProfiles)<-c("Good","Medium","Bad")
+#' 
+#' categoriesRanks <-c(1,2,3)
+#' 
+#' names(categoriesRanks) <- c("Good","Medium","Bad")
+#' 
+#' # criteria to minimize or maximize
+#' 
+#' criteriaMinMax <- c("min","min","max")
+#' 
+#' names(criteriaMinMax) <- colnames(performanceTable)
+#' 
+#' # lower bounds of the criteria for the determination of value functions
+#' 
+#' criteriaLBs=c(0,5,0)
+#' 
+#' names(criteriaLBs) <- colnames(performanceTable)
+#' 
+#' # upper bounds of the criteria for the determination of value functions
+#' 
+#' criteriaUBs=c(50,50,4)
+#' 
+#' names(criteriaUBs) <- colnames(performanceTable)
+#' 
+#' # weights
+#' 
+#' criteriaWeights <- c(1,3,2)
+#' 
+#' names(criteriaWeights) <- colnames(performanceTable)
+#' 
+#' assignments <- assignments<-MRSort(performanceTable, 
+#'                                    categoriesLowerProfiles, 
+#'                                    categoriesRanks,
+#'                                    criteriaWeights, 
+#'                                    criteriaMinMax, 3)
+#' 
+#' names(assignments) <- rownames(performanceTable)
+#' 
+#' plotMRSortSortingProblem(performanceTable, categoriesLowerProfiles, 
+#'                          categoriesRanks, assignments, criteriaMinMax, 
+#'                          criteriaUBs, criteriaLBs)
+#' 
+#' @export plotMRSortSortingProblem
+#' @import RColorBrewer
+#' @importFrom grDevices palette rainbow
+#' @importFrom graphics arrows axis layout legend lines par plot plot.new points text title polygon
 plotMRSortSortingProblem <- function(performanceTable, categoriesLowerProfiles, categoriesRanks, assignments, criteriaMinMax, criteriaUBs, criteriaLBs, categoriesDictators = NULL, categoriesVetoes = NULL, majorityRule = NULL, criteriaWeights = NULL, majorityThreshold = NULL, alternativesIDs = NULL, criteriaIDs = NULL, legendRatio = 0.2){
   
   ## check the input data
@@ -209,7 +339,7 @@ plotMRSortSortingProblem <- function(performanceTable, categoriesLowerProfiles, 
   col.alt.markers <- rainbow(20)
   
   if (numCat >= 3 && numCat <= 11)
-    col.cat <- brewer.pal(numCat,"Dark2")
+    col.cat <- RColorBrewer::brewer.pal(numCat,"Dark2")
   
   names(col.cat) <- rownames(categoriesLowerProfiles)
   

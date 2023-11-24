@@ -1,45 +1,3 @@
-#############################################################################
-#
-# Copyright Patrick Meyer, Sébastien Bigaret, Richard Hodgett, Alexandru-Liviu Olteanu and Sajid Siraj, 2019
-#
-# Contributors:
-#   Patrick Meyer <patrick.meyer@telecom-bretagne.eu>
-#   Sebastien Bigaret <sebastien.bigaret@telecom-bretagne.eu>
-#   Richard Hodgett <r.e.hodgett@leeds.ac.uk>
-#   Alexandru-Liviu Olteanu
-#   Sajid Siraj <sajidsiraj@gmail.com>
-#		
-# This software, MCDA, is a package for the R statistical software which 
-# allows to use MCDA algorithms and methods. 
-# 
-# This software is governed by the CeCILL license (v2) under French law
-# and abiding by the rules of distribution of free software. You can
-# use, modify and/ or redistribute the software under the terms of the
-# CeCILL license as circulated by CEA, CNRS and INRIA at the following
-# URL "http://www.cecill.info".
-# 
-# As a counterpart to the access to the source code and rights to copy,
-# modify and redistribute granted by the license, users are provided only
-# with a limited warranty and the software's author, the holder of the
-# economic rights, and the successive licensors have only limited
-# liability.
-#		
-# In this respect, the user's attention is drawn to the risks associated
-# with loading, using, modifying and/or developing or reproducing the
-# software by the user in light of its specific status of free software,
-# that may mean that it is complicated to manipulate, and that also
-# therefore means that it is reserved for developers and experienced
-# professionals having in-depth computer knowledge. Users are therefore
-# encouraged to load and test the software's suitability as regards their
-# requirements in conditions enabling the security of their systems and/or
-# data to be ensured and, more generally, to use and operate it in the
-# same conditions as regards security.
-#		
-# The fact that you are presently reading this means that you have had
-# knowledge of the CeCILL license and that you accept its terms.
-#
-##############################################################################
-
 Concordance <- function(scores, q, p, w ){
   
   ## feasability checks for "scores"
@@ -185,6 +143,49 @@ Distillation <- function(credibility, threshold=0.3){
   
 }
 
+
+
+#' ELimination Et Choice Translating REality - ELECTRE-III
+#' 
+#' ELECTRE (ELimination Et Choice Translating REality) is an outranking method
+#' proposed by Bernard Roy and his colleagues at SEMA consultancy company. This
+#' is the implementation of ELECTRE-III.
+#' 
+#' 
+#' @param scores Matrix or data frame containing the performance table. Each
+#' column corresponds to a criterion, and each row to an alternative.
+#' @param q Vector containing the indifference thresholds. The elements are
+#' named according to the IDs of the criteria.
+#' @param p Vector containing the preference threshold on each of the criteria.
+#' The elements are named according to the IDs of the criteria.
+#' @param v Vector containing the veto thresholds for each criterion. The
+#' elements are named according to the IDs of the criteria.
+#' @param w Vector containing the weights of criteria. The elements are named
+#' according to the IDs of the criteria.
+#' @return The function returns the Concordance, Discordance, Credibility,
+#' Dominance, and Scoring tables.
+#' @references Roy, Bernard (1968). "Classement et choix en présence de points
+#' de vue multiples (la méthode ELECTRE)". La Revue d'Informatique et de
+#' Recherche Opérationelle (RIRO) (8): 57–75.
+#' @examples
+#' 
+#' library(MCDA)
+#' scores <- matrix( c(-0.2,-2.3,-2.4,-1,3,9,10,7), 
+#'                   nrow = 4, 
+#'                   dimnames = list(
+#'                     c("School-A","School-B","School-C", "School-D"), 
+#'                     c("Location","Quality")) )
+#' 
+#' q <- c( 0.2, 1)
+#' p <- c(   1, 2)
+#' v <- c( 3.5, 4)
+#' w <- c(0.25, 0.75)
+#' 
+#' res <- ELECTRE3(scores, q, p, v, w)
+#' print(res)
+#' 
+#' 
+#' @export ELECTRE3
 ELECTRE3 <- function(scores, q, p, v, w ){
   
   ## feasability checks for "scores"

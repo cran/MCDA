@@ -1,3 +1,36 @@
+#' Weighted sum of evaluations of alternatives.
+#' 
+#' Computes the weighted sum of the evaluations of alternatives, stored in a
+#' performance table, with respect to a vector of criteria weights.
+#' 
+#' 
+#' @param performanceTable Matrix or data frame containing the performance
+#' table. Each row corresponds to an alternative, and each column to a
+#' criterion. Rows (resp. columns) must be named according to the IDs of the
+#' alternatives (resp. criteria).
+#' @param criteriaWeights Vector containing the weights of the criteria. The
+#' elements are named according to the IDs of the criteria.
+#' @param alternativesIDs Vector containing IDs of alternatives, according to
+#' which the performance table should be filtered.
+#' @param criteriaIDs Vector containing IDs of criteria, according to which the
+#' performance table should be filtered.
+#' @return The function returns a vector containing the weighted sum of the
+#' alternatives with respect to the criteria weights.
+#' @keywords methods
+#' @examples
+#' alts <- paste0("alt", 1:4)
+#' crit <- paste0("x", 1:3)
+#' performanceTable <- matrix(runif(length(alts)*length(crit)), 
+#'                            nrow=length(alts), ncol=length(crit), 
+#'                            dimnames=list(alts, crit))
+#' weights <- setNames(c(1,2,3), crit)
+#' # Overall
+#' weightedSum(performanceTable, weights)
+#' # Subset of alteratives and criteria
+#' weightedSum(performanceTable, weights, 
+#'             alternativesIDs=c("alt2","alt3"), criteriaIDs=c("x2","x3"))
+#' 
+#' @export weightedSum
 weightedSum <- function(performanceTable, criteriaWeights, alternativesIDs = NULL, criteriaIDs = NULL){
   
   ## check the input data
